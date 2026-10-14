@@ -1,8 +1,9 @@
-import { ipcMain, type BrowserWindow, type IpcMainInvokeEvent } from 'electron'
+import { app, dialog, ipcMain, type BrowserWindow, type IpcMainInvokeEvent } from 'electron'
 import type { AppRecord, PlatformSettings, SdkResult } from '@scitool/sdk'
 import { SHELL_CHANNELS } from '../shared/shell-channels'
 import { installApp, launchApp, listApps, pickZipPath, uninstallApp } from './app-manager'
 import { getSettings, updateSettings } from './settings-store'
+import { moveDataDir } from './data-dir'
 
 let shellWindow: BrowserWindow | null = null
 
@@ -73,6 +74,34 @@ export function registerShellServices(): void {
   ipcMain.handle(SHELL_CHANNELS.settingsSet, (event, patch: Partial<PlatformSettings>) => {
     if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
     return { ok: true, data: updateSettings(patch) }
+  })
+
+  ipcMain.handle(SHELL_CHANNELS.dataDirGet, (event) => {
+    if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
+    return { ok: true, data: { current: app.getPath('userData') } }
+  })
+
+  ipcMain.handle(SHELL_CHANNELS.dataDirPick, (event) => {
+    if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
+    return wrap(async () => {
+      const res = await dialog.showOpenDialog({
+        title: '选择数据目录',
+        properties: ['openDirectory', 'createDirectory']
+      })
+      if (res.canceled || !res.filePaths[0]) return null
+      return res.filePaths[0]
+    })
+  })
+
+  ipcMain.handle(SHELL_CHANNELS.dataDirMove, (event, target: unknown) => {
+    if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
+    try {
+      if (typeof target !== 'string' || !target) throw new Error('目录路径缺失')
+      moveDataDir(target, true)
+      return { ok: true }
+    } catch (err) {
+      return { ok: false, error: err instanceof Error ? err.message : String(err) }
+    }
   })
 }
 

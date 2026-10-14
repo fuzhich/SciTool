@@ -116,3 +116,14 @@
   - 镜像：electron-builder 下载 electron/NSIS/winCodeSign 需 `ELECTRON_MIRROR` + `ELECTRON_BUILDER_BINARIES_MIRROR` 环境变量，或 electron-builder.yml 的 `electronDownload.mirror`；git-bash 下静默安装 `/D` 参数传 Unix 路径会失败（安装向导交互模式正常）
   - **已验证**：开发者手动安装到 D:\Apps\SciTool 成功，启动正常，卸载项已注册
 - **遗留**：exe 未签名（无证书），其他机器首次运行会有 SmartScreen 提示；代码签名证书与自动更新属 M3 范围
+
+### [D14] 数据目录方案：默认安装目录/data + 可迁移（2026-10-14）
+
+- **背景**：开发者要求数据不放在 C 盘 AppData，默认随安装目录存放（绿色便携风格），且支持自定义迁移
+- **结论**：
+  - **默认数据目录 = `<安装目录>\data`**（打包模式）；开发模式维持 `%APPDATA%/@scitool/shell`
+  - **解析优先级**：迁移指针文件（`%APPDATA%/SciTool{,-dev}/datadir.json`）> 安装目录/data > AppData 兜底（无写权限时）
+  - **迁移**：设置页「数据目录」→ 选择新目录（必须为空、不可嵌套/上级）→ 选择性复制核心数据（apps/app-storage/logs/data/registry.json/settings.json）→ 写指针 → 重启生效；原目录保留作备份
+  - **坑**：整体复制 userData 会因 Chromium 缓存文件被运行中的应用锁定而 EACCES —— 必须选择性迁移，跳过 Cache/GPUCache 等可再生目录
+  - **卸载保护**：NSIS include 脚本（build/installer.nsh）customUnInstall —— 卸载时把 data 移到 `%LOCALAPPDATA%\SciTool\data-backup` 并弹提示
+- **验证**：打包模式数据落于安装目录/data（开发者手动安装实测）；迁移链路（复制+指针+重启生效）冒烟通过；卸载保护脚本已随安装器打包（卸载流程建议后续实测）

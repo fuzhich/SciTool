@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { SHELL_CHANNELS } from '../shared/shell-channels'
-import type { AppRecord, PlatformSettings, SdkResult } from '@scitool/sdk'
+import type { AppRecord, DataDirInfo, PlatformSettings, SdkResult } from '@scitool/sdk'
 
 const api = {
   apps: {
@@ -15,6 +15,11 @@ const api = {
     get: (): Promise<SdkResult<PlatformSettings>> => ipcRenderer.invoke(SHELL_CHANNELS.settingsGet),
     set: (patch: Partial<PlatformSettings>): Promise<SdkResult<PlatformSettings>> =>
       ipcRenderer.invoke(SHELL_CHANNELS.settingsSet, patch)
+  },
+  dataDir: {
+    get: (): Promise<SdkResult<DataDirInfo>> => ipcRenderer.invoke(SHELL_CHANNELS.dataDirGet),
+    pick: (): Promise<SdkResult<string | null>> => ipcRenderer.invoke(SHELL_CHANNELS.dataDirPick),
+    move: (target: string): Promise<SdkResult> => ipcRenderer.invoke(SHELL_CHANNELS.dataDirMove, target)
   },
   onAppsChanged: (callback: (apps: AppRecord[]) => void): (() => void) => {
     const listener = (_e: Electron.IpcRendererEvent, apps: AppRecord[]): void => callback(apps)

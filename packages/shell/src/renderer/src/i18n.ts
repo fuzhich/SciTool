@@ -26,7 +26,17 @@ const zh = {
     load: '加载失败'
   },
   installSuccess: '安装成功：{{name}}',
-  uninstallSuccess: '已卸载：{{name}}'
+  uninstallSuccess: '已卸载：{{name}}',
+  settings: '设置',
+  close: '关闭',
+  dataDir: '数据目录',
+  dataDirDesc: '应用数据、已安装应用与共享数据库的存放位置',
+  dataDirCurrent: '当前位置',
+  changeDataDir: '更改数据目录…',
+  dataDirMoveConfirm:
+    '将把所有数据迁移到以下位置并重启应用：\n\n{{path}}\n\n请确保该文件夹为空。迁移后原数据目录会保留作为备份，可手动删除。',
+  dataDirMoving: '正在迁移数据…',
+  dataDirMoveOk: '迁移成功，应用即将重启'
 }
 
 const en = {
@@ -53,7 +63,17 @@ const en = {
     load: 'Load failed'
   },
   installSuccess: 'Installed: {{name}}',
-  uninstallSuccess: 'Uninstalled: {{name}}'
+  uninstallSuccess: 'Uninstalled: {{name}}',
+  settings: 'Settings',
+  close: 'Close',
+  dataDir: 'Data Directory',
+  dataDirDesc: 'Where app data, installed apps and the shared database live',
+  dataDirCurrent: 'Current location',
+  changeDataDir: 'Change data directory…',
+  dataDirMoveConfirm:
+    'All data will be migrated to the following location and the app will restart:\n\n{{path}}\n\nMake sure the folder is empty. The old data directory is kept as a backup; you may delete it manually.',
+  dataDirMoving: 'Migrating data…',
+  dataDirMoveOk: 'Migration complete, restarting…'
 }
 
 export type Translation = typeof zh

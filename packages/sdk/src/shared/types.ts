@@ -47,6 +47,10 @@ export interface PlatformSettings {
   theme: Theme
 }
 
+export interface DataDirInfo {
+  current: string
+}
+
 export interface StorageResult<T = unknown> {
   exists: boolean
   value: T | null

@@ -8,6 +8,7 @@ import { appDir } from './paths'
 import { registerSdkServices } from './sdk-service'
 import { registerShellServices, setShellWindow } from './shell-service'
 import { writeLog } from './logger'
+import { applyDataDir, moveDataDir } from './data-dir'
 
 function createShellWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
@@ -52,6 +53,8 @@ function createShellWindow(): BrowserWindow {
   return mainWindow
 }
 
+applyDataDir()
+
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.scitool.platform')
 
@@ -63,7 +66,7 @@ app.whenReady().then(() => {
   registerSdkServices()
   registerShellServices()
   createShellWindow()
-  writeLog('platform', 'info', `SciTool platform started, SDK v0.1.0`)
+  writeLog('platform', 'info', `SciTool platform started, SDK v0.1.0, dataDir=${app.getPath('userData')}`)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createShellWindow()
@@ -99,6 +102,17 @@ app.whenReady().then(() => {
             writeLog('smoke', 'error', `uninstall failed: ${err instanceof Error ? err.message : String(err)}`)
           }
         }, 8000)
+        const smokeMove = process.env['SCITOOL_SMOKE_MOVE']
+        if (smokeMove) {
+          setTimeout(() => {
+            try {
+              const moved = moveDataDir(smokeMove, false)
+              writeLog('smoke', 'info', `data dir moved to: ${moved}`)
+            } catch (err) {
+              writeLog('smoke', 'error', `move failed: ${err instanceof Error ? err.message : String(err)}`)
+            }
+          }, 10000)
+        }
         setTimeout(() => {
           writeLog('smoke', 'info', 'smoke test finished')
           app.exit(0)

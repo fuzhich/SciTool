@@ -6,6 +6,7 @@ import { useAppStore } from './stores/app-store'
 import { Button } from './components/ui/button'
 import { Card } from './components/ui/card'
 import { Badge } from './components/ui/badge'
+import { SettingsModal } from './components/settings-modal'
 
 function AppIcon({ app }: { app: AppRecord }): React.JSX.Element {
   if (app.icon) {
@@ -79,6 +80,7 @@ export default function App(): React.JSX.Element {
   const { t } = useTranslation()
   const { apps, settings, loading, load, refreshApps, updateSettings } = useAppStore()
   const [installing, setInstalling] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   useEffect(() => {
     void load()
@@ -130,6 +132,9 @@ export default function App(): React.JSX.Element {
             <Button size="sm" variant="ghost" onClick={toggleLanguage}>
               {settings.language === 'zh' ? 'EN' : '中文'}
             </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSettingsOpen(true)}>
+              {t('settings')}
+            </Button>
             <Button size="sm" disabled={installing} onClick={onInstall}>
               {installing ? '…' : t('install')}
             </Button>
@@ -171,6 +176,8 @@ export default function App(): React.JSX.Element {
       <footer className="border-t border-zinc-200/80 py-4 text-center text-[11px] text-zinc-400">
         SciTool Platform · SDK 0.1.0 · M1
       </footer>
+
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   )
 }

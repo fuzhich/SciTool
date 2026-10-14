@@ -6,5 +6,8 @@ export const SHELL_CHANNELS = {
   pickZip: 'platform:pick:zip',
   settingsGet: 'platform:settings:get',
   settingsSet: 'platform:settings:set',
+  dataDirGet: 'platform:data-dir:get',
+  dataDirPick: 'platform:data-dir:pick',
+  dataDirMove: 'platform:data-dir:move',
   onAppsChanged: 'platform:apps:changed'
 } as const
