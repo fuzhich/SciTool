@@ -18,8 +18,10 @@ __pycache__/
 .venv/
 venv/
 env/
-build/
 *.spec
+
+# === 构建产物 ===
+packages/apps/sample-app/dist/
 
 # === IDE / 编辑器 ===
 .vscode/
