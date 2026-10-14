@@ -26,18 +26,22 @@
   - `sdk.events`：域名订阅 → created/updated/removed 事件推送（Notifier 模式），窗口关闭自动清理
   - SDK v0.2.0；修复 M1 遗留 storage.get 解析 bug
   - dev 与打包模式冒烟全绿
+- [x] **M3 里程碑完成**（D16）：
+  - 平台自更新：electron-updater（generic/github provider）+ 设置页检查/下载/重启安装；冒烟验证检查链路
+  - 应用自更新：manifest update.url → 下载替换（先关窗口防锁）；冒烟全链路 0.2.0→0.2.1
+  - 暗色主题（Tailwind v4 class 模式）+ 设置页（主题/关于/更新/数据目录）
 
 ### 进行中
 
 （无）
 
-### 待办（下一步 · M3）
+### 待办（下一步 · M4 分发）
 
-- [ ] 更新通道（应用自更新 + 平台自更新，electron-updater）
-- [ ] 完整 i18n 覆盖与细节打磨（暗色主题等）
-- [ ] 错误处理完善、应用中心交互优化（启动状态、多开控制）
-- [ ] 代码签名证书（SmartScreen 消除）
+- [ ] 真实发布：GitHub Releases 作为更新源（需开发者确认后执行 electron-builder --publish）
+- [ ] 代码签名证书购买（SmartScreen 消除，约 ¥1000-3000/年）
 - [ ] 卸载保护实测（卸载 → data-backup 链路）
+- [ ] 暗色主题视觉目验
+- [ ] 远程应用市场（架构已预留：市场清单与包源解耦）
 
 ## 历史进度
 

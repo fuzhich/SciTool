@@ -140,3 +140,18 @@
   - **SDK v0.2.0**：minSdkVersion 校验生效（示例应用升 0.2.0）
   - **修复 M1 遗留 bug**：storage.get 客户端响应解析错误（envelope 未解包，恒返 null）——M1 冒烟未覆盖读路径，M2 冒烟补齐
 - **验证**：dev 与打包模式冒烟全绿（读写/冲突/事件/迁移/存储）
+
+### [D16] M3 打磨：更新通道与暗色主题（2026-10-14）
+
+- **背景**：M3 里程碑——更新通道、暗色主题、设置页完善
+- **结论**：
+  - **平台自更新**：electron-updater 6 + generic/github provider（publish 配置指向 github: fuzhich/SciTool）；自动检查关闭（autoDownload=false），设置页手动「检查更新→下载→重启安装」；状态机（checking/available/not-available/downloading/downloaded/error）广播到壳层 UI；开发模式 forceDevUpdateConfig + dev-app-update.yml；冒烟验证检查链路（本地 server 发现 99.0.0）
+  - **应用自更新**：manifest `update.url` → 更新清单 `{version, url}` → 版本比较 → 下载 zip → **先关闭该应用运行窗口**（防文件锁）→ 替换安装；应用卡片「检查更新」按钮；冒烟全链路验证 0.2.0→0.2.1
+  - **暗色主题**：Tailwind v4 `@custom-variant dark` class 模式；全部组件 dark: 适配；标题栏主题切换按钮 + 设置页主题区；主题持久化于 settings
+  - **设置页**：主题切换、关于（版本显示）、检查更新（状态+下载+重启安装）、数据目录迁移
+  - **坑**：electron-updater 请求 latest.yml 带查询参数，测试 server 需剥离 query string；子应用更新时运行中的窗口会锁文件（Windows），必须先关窗
+- **遗留**：
+  - 平台更新的**真实发布**（GitHub Releases + latest.yml）需 `gh auth token` 发布，待开发者确认后执行
+  - 暗色主题视觉效果待开发者目验
+  - 代码签名证书购买（SmartScreen 消除）为外部事项
+  - 卸载保护（data-backup）实测

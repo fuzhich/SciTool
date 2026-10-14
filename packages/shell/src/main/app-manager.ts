@@ -100,7 +100,15 @@ export async function uninstallApp(appId: string): Promise<void> {
   writeLog('platform', 'info', `app uninstalled: ${appId}`)
 }
 
-const runningWindows = new Map<number, { appId: string; restarts: number }>()
+const runningWindows = new Map<number, { appId: string; restarts: number; win: BrowserWindow }>()
+
+export function closeAppWindows(appId: string): void {
+  for (const entry of runningWindows.values()) {
+    if (entry.appId === appId && !entry.win.isDestroyed()) {
+      entry.win.destroy()
+    }
+  }
+}
 
 export async function launchApp(appId: string): Promise<BrowserWindow> {
   const record = getAppRecord(appId)
@@ -133,7 +141,7 @@ export async function launchApp(appId: string): Promise<BrowserWindow> {
 
   const wcId = win.webContents.id
   registerAppWindow(wcId, { appId, permissions: record.permissions })
-  runningWindows.set(wcId, { appId, restarts: 0 })
+  runningWindows.set(wcId, { appId, restarts: 0, win })
 
   win.webContents.on('render-process-gone', (_e, details) => {
     writeLog('platform', 'error', `app renderer gone: ${appId} (${details.reason})`)

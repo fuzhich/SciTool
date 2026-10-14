@@ -36,7 +36,22 @@ const zh = {
   dataDirMoveConfirm:
     '将把所有数据迁移到以下位置并重启应用：\n\n{{path}}\n\n请确保该文件夹为空。迁移后原数据目录会保留作为备份，可手动删除。',
   dataDirMoving: '正在迁移数据…',
-  dataDirMoveOk: '迁移成功，应用即将重启'
+  dataDirMoveOk: '迁移成功，应用即将重启',
+  about: '关于',
+  versionLabel: '当前版本',
+  checkUpdate: '检查更新',
+  updateChecking: '正在检查更新…',
+  updateAvailable: '发现新版本 {{version}}',
+  updateNotAvailable: '已是最新版本',
+  updateDownloading: '正在下载更新 {{percent}}%',
+  updateDownloaded: '新版本已就绪，将在退出时自动安装',
+  updateInstallNow: '立即重启安装',
+  updateDownloadBtn: '下载更新',
+  updateError: '更新失败',
+  appUpdateCheck: '检查更新',
+  appUpdated: '「{{name}}」已更新到 v{{version}}',
+  appUpdateNone: '「{{name}}」已是最新版本',
+  appUpdateFailed: '应用更新失败'
 }
 
 const en = {
@@ -73,7 +88,22 @@ const en = {
   dataDirMoveConfirm:
     'All data will be migrated to the following location and the app will restart:\n\n{{path}}\n\nMake sure the folder is empty. The old data directory is kept as a backup; you may delete it manually.',
   dataDirMoving: 'Migrating data…',
-  dataDirMoveOk: 'Migration complete, restarting…'
+  dataDirMoveOk: 'Migration complete, restarting…',
+  about: 'About',
+  versionLabel: 'Version',
+  checkUpdate: 'Check for updates',
+  updateChecking: 'Checking for updates…',
+  updateAvailable: 'New version {{version}} available',
+  updateNotAvailable: 'You are up to date',
+  updateDownloading: 'Downloading update {{percent}}%',
+  updateDownloaded: 'Update ready, will install on exit',
+  updateInstallNow: 'Restart and install',
+  updateDownloadBtn: 'Download update',
+  updateError: 'Update failed',
+  appUpdateCheck: 'Check update',
+  appUpdated: '"{{name}}" updated to v{{version}}',
+  appUpdateNone: '"{{name}}" is up to date',
+  appUpdateFailed: 'App update failed'
 }
 
 export type Translation = typeof zh

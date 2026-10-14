@@ -22,6 +22,8 @@ env/
 
 # === 构建产物 ===
 packages/apps/sample-app/dist/
+packages/apps/sample-app/test-update/
+packages/apps/sample-app/.update-stage/
 
 # === IDE / 编辑器 ===
 .vscode/

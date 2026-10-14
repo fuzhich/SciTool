@@ -4,6 +4,13 @@ import { SHELL_CHANNELS } from '../shared/shell-channels'
 import { installApp, launchApp, listApps, pickZipPath, uninstallApp } from './app-manager'
 import { getSettings, updateSettings } from './settings-store'
 import { moveDataDir } from './data-dir'
+import {
+  checkForUpdates,
+  downloadUpdate,
+  getUpdateStatus,
+  platformVersion,
+  quitAndInstall
+} from './updater'
 
 let shellWindow: BrowserWindow | null = null
 
@@ -103,6 +110,42 @@ export function registerShellServices(): void {
       return { ok: false, error: err instanceof Error ? err.message : String(err) }
     }
   })
+
+  ipcMain.handle(SHELL_CHANNELS.updateStatusGet, (event) => {
+    if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
+    return { ok: true, data: { status: getUpdateStatus(), version: platformVersion() } }
+  })
+
+  ipcMain.handle(SHELL_CHANNELS.updateCheck, (event) => {
+    if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
+    return wrap(() => checkForUpdates())
+  })
+
+  ipcMain.handle(SHELL_CHANNELS.updateDownload, (event) => {
+    if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
+    return wrap(() => downloadUpdate())
+  })
+
+  ipcMain.handle(SHELL_CHANNELS.updateInstall, (event) => {
+    if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
+    quitAndInstall()
+    return { ok: true }
+  })
+
+  ipcMain.handle(SHELL_CHANNELS.appUpdateCheck, (event, appId: unknown) => {
+    if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
+    return wrap(async () => {
+      if (typeof appId !== 'string') throw new Error('应用 id 缺失')
+      const { checkAppUpdate } = await import('./app-updater')
+      return checkAppUpdate(appId)
+    })
+  })
+}
+
+export function broadcastUpdateStatus(): void {
+  if (shellWindow && !shellWindow.isDestroyed()) {
+    shellWindow.webContents.send(SHELL_CHANNELS.updateStatusChanged, getUpdateStatus())
+  }
 }
 
 export type { AppRecord }

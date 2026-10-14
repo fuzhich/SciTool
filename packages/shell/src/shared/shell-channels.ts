@@ -9,5 +9,11 @@ export const SHELL_CHANNELS = {
   dataDirGet: 'platform:data-dir:get',
   dataDirPick: 'platform:data-dir:pick',
   dataDirMove: 'platform:data-dir:move',
+  updateStatusGet: 'platform:update:status',
+  updateCheck: 'platform:update:check',
+  updateDownload: 'platform:update:download',
+  updateInstall: 'platform:update:install',
+  updateStatusChanged: 'platform:update:status-changed',
+  appUpdateCheck: 'platform:app-update:check',
   onAppsChanged: 'platform:apps:changed'
 } as const

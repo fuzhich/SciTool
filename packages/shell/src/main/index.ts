@@ -1,6 +1,7 @@
 import { app, shell, BrowserWindow } from 'electron'
 import { SDK_VERSION } from '@scitool/sdk'
-import { existsSync } from 'fs'
+import { createServer } from 'http'
+import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -11,6 +12,8 @@ import { registerShellServices, setShellWindow } from './shell-service'
 import { writeLog } from './logger'
 import { applyDataDir, moveDataDir } from './data-dir'
 import { closeDb, getDb } from './db'
+import { checkForUpdates, initUpdater, onUpdateStatus, setUpdateFeed } from './updater'
+import { broadcastUpdateStatus } from './shell-service'
 
 function createShellWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
@@ -68,6 +71,10 @@ app.whenReady().then(() => {
   getDb()
   registerSdkServices()
   registerShellServices()
+  initUpdater()
+  onUpdateStatus(() => broadcastUpdateStatus())
+  const smokeUpdateUrl = process.env['SCITOOL_SMOKE_UPDATE_URL']
+  if (smokeUpdateUrl) setUpdateFeed(smokeUpdateUrl)
   createShellWindow()
   writeLog('platform', 'info', `SciTool platform started, SDK v${SDK_VERSION}, dataDir=${app.getPath('userData')}`)
 
@@ -138,7 +145,7 @@ app.whenReady().then(() => {
           } catch (err) {
             writeLog('smoke', 'error', `uninstall failed: ${err instanceof Error ? err.message : String(err)}`)
           }
-        }, 8000)
+        }, process.env['SCITOOL_SMOKE_APP_UPDATE_FIXTURES'] ? 12000 : 8000)
         const smokeMove = process.env['SCITOOL_SMOKE_MOVE']
         if (smokeMove) {
           setTimeout(() => {
@@ -149,6 +156,44 @@ app.whenReady().then(() => {
               writeLog('smoke', 'error', `move failed: ${err instanceof Error ? err.message : String(err)}`)
             }
           }, 10000)
+        }
+        const appUpdateFixtures = process.env['SCITOOL_SMOKE_APP_UPDATE_FIXTURES']
+        const fixturesDir =
+          appUpdateFixtures || process.env['SCITOOL_SMOKE_PLATFORM_UPDATE_FIXTURES']
+        if (fixturesDir) {
+          const server = createServer((req, res) => {
+            const name = ((req.url ?? '/').split('?')[0].replace(/^\//, '') || 'update-manifest.json')
+            try {
+              const buf = readFileSync(join(fixturesDir, name))
+              res.writeHead(200)
+              res.end(buf)
+            } catch {
+              res.writeHead(404)
+              res.end()
+            }
+          })
+          server.listen(9851, '127.0.0.1')
+        }
+        if (appUpdateFixtures) {
+          setTimeout(async () => {
+            try {
+              const { checkAppUpdate } = await import('./app-updater')
+              const result = await checkAppUpdate('com.scitool.sample')
+              writeLog('smoke', 'info', `appUpdate: ${JSON.stringify(result)}`)
+            } catch (err) {
+              writeLog('smoke', 'error', `appUpdate failed: ${err instanceof Error ? err.message : String(err)}`)
+            }
+          }, 7000)
+        }
+        if (process.env['SCITOOL_SMOKE_PLATFORM_UPDATE']) {
+          setTimeout(async () => {
+            try {
+              const status = await checkForUpdates()
+              writeLog('smoke', 'info', `platformUpdate: ${JSON.stringify(status)}`)
+            } catch (err) {
+              writeLog('smoke', 'error', `platformUpdate failed: ${err instanceof Error ? err.message : String(err)}`)
+            }
+          }, 12000)
         }
         setTimeout(() => {
           writeLog('smoke', 'info', 'smoke test finished')

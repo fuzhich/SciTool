@@ -21,6 +21,22 @@ const api = {
     pick: (): Promise<SdkResult<string | null>> => ipcRenderer.invoke(SHELL_CHANNELS.dataDirPick),
     move: (target: string): Promise<SdkResult> => ipcRenderer.invoke(SHELL_CHANNELS.dataDirMove, target)
   },
+  updates: {
+    status: (): Promise<SdkResult<{ status: unknown; version: string }>> =>
+      ipcRenderer.invoke(SHELL_CHANNELS.updateStatusGet),
+    check: (): Promise<SdkResult<unknown>> => ipcRenderer.invoke(SHELL_CHANNELS.updateCheck),
+    download: (): Promise<SdkResult> => ipcRenderer.invoke(SHELL_CHANNELS.updateDownload),
+    install: (): Promise<SdkResult> => ipcRenderer.invoke(SHELL_CHANNELS.updateInstall),
+    checkApp: (appId: string): Promise<SdkResult<unknown>> =>
+      ipcRenderer.invoke(SHELL_CHANNELS.appUpdateCheck, appId),
+    onStatusChanged: (callback: (status: unknown) => void): (() => void) => {
+      const listener = (_e: Electron.IpcRendererEvent, status: unknown): void => callback(status)
+      ipcRenderer.on(SHELL_CHANNELS.updateStatusChanged, listener)
+      return () => {
+        ipcRenderer.removeListener(SHELL_CHANNELS.updateStatusChanged, listener)
+      }
+    }
+  },
   onAppsChanged: (callback: (apps: AppRecord[]) => void): (() => void) => {
     const listener = (_e: Electron.IpcRendererEvent, apps: AppRecord[]): void => callback(apps)
     ipcRenderer.on(SHELL_CHANNELS.onAppsChanged, listener)

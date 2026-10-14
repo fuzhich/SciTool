@@ -14,5 +14,8 @@
   "permissions": ["storage", "settings", "log", "ui", "sharedData", "events"],
   "sharedDomains": [
     { "domain": "papers", "access": "write" }
-  ]
+  ],
+  "update": {
+    "url": "http://127.0.0.1:9851/update-manifest.json"
+  }
 }
