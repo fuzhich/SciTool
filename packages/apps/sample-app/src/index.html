@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SciTool Sample App</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="card">
+      <header>
+        <h1 id="title">SciTool 示例应用</h1>
+        <p id="subtitle" class="muted"></p>
+      </header>
+
+      <section class="grid">
+        <div class="kv">
+          <span class="label">appId</span>
+          <code id="app-id">-</code>
+        </div>
+        <div class="kv">
+          <span class="label">SDK version</span>
+          <code id="sdk-version">-</code>
+        </div>
+        <div class="kv">
+          <span class="label">平台语言</span>
+          <code id="language">-</code>
+        </div>
+        <div class="kv">
+          <span class="label">主题</span>
+          <code id="theme">-</code>
+        </div>
+      </section>
+
+      <section class="actions">
+        <div class="action-row">
+          <input id="storage-key" value="hello" placeholder="key" />
+          <input id="storage-value" value="world" placeholder="value" />
+          <button id="btn-set">写入存储</button>
+          <button id="btn-get">读取存储</button>
+        </div>
+        <div class="action-row">
+          <button id="btn-log">写日志</button>
+          <button id="btn-notify">发通知</button>
+        </div>
+      </section>
+
+      <pre id="output" class="output">点击按钮查看 SDK 调用结果…</pre>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>

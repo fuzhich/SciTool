@@ -8,3 +8,4 @@
 | 2026-10-14 | 版本控制验证：conda 安装 gh CLI 至 agent-tool 环境、设备码登录（账号 fuzhich）、创建公开仓库 SciTool 并推送 main | 仓库 https://github.com/fuzhich/SciTool | 完成 |
 | 2026-10-14 | 需求确认：产品定位（科研工具箱平台）、技术栈（Electron + React + TS）、MVP 范围（先搭平台）、窗口形态（独立进程）、i18n（中英）、视觉（极简现代风）；产出架构草案 v0.1 | 决策 D1–D9、architecture.md | 完成 |
 | 2026-10-14 | 架构调研：并行调研 Rubick/uTools、VS Code/Theia、Joplin/Zotero 六产品架构，提炼借鉴与避坑清单，产出架构草案 v0.2 | 决策 D11、architecture.md v0.2 | 完成 |
+| 2026-10-14 | M1 实施：monorepo 搭建（shell/sdk/sample-app）、主进程（注册表/权限网关/生命周期/崩溃恢复）、SDK 最小集、应用中心 UI（Tailwind 极简风+中英 i18n）、冒烟测试验证 安装→启动→SDK→卸载 全链路 | packages/ 全部源码、决策 D12 | 完成 |

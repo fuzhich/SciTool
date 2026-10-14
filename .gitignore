@@ -4,6 +4,13 @@ dev/secret/
 # === Claude Code 本地配置 ===
 .claude/
 
+# === Node / pnpm ===
+node_modules/
+out/
+dist/
+*.log
+.eslintcache
+
 # === Python ===
 __pycache__/
 *.py[cod]
@@ -12,7 +19,6 @@ __pycache__/
 venv/
 env/
 build/
-dist/
 *.spec
 
 # === IDE / 编辑器 ===

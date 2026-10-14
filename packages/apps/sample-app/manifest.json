@@ -1,0 +1,15 @@
+{
+  "id": "com.scitool.sample",
+  "name": {
+    "zh": "示例应用",
+    "en": "Sample App"
+  },
+  "version": "0.1.0",
+  "minSdkVersion": "0.1.0",
+  "description": {
+    "zh": "开发期示例应用：验证 SDK（存储/设置/日志/通知）与安装启动链路",
+    "en": "Dev-only sample app: verifies SDK (storage/settings/log/notify) and install/launch pipeline"
+  },
+  "entry": "index.html",
+  "permissions": ["storage", "settings", "log", "ui"]
+}

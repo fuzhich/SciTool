@@ -94,3 +94,13 @@
 - **采纳**：声明式 manifest、独立进程隔离（Extension Host 模式）、SDK 只增不改+minSdkVersion、数据经平台 API 访问（学 Joplin 不学 Zotero）、事件总线（Zotero Notifier）、应用中心=注册中心、轻量服务注册表
 - **规避**：preload 全量权限（改权限清单+白名单）、UI 锁死宿主面板、应用同进程、更新机制缺失、API 无版本管理
 - **产出**：architecture.md v0.2
+
+### [D12] M1 实施中的技术要点（2026-10-14）
+
+- **背景**：M1 实施过程中踩坑与解决，记录以防复发
+- **要点**：
+  1. pnpm 11/12 弃用 `onlyBuiltDependencies`，须在 pnpm-workspace.yaml 用 `allowBuilds` 映射，否则 Electron 二进制不会下载（报 ERR_PNPM_IGNORED_BUILDS）
+  2. Electron 二进制下载：`ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/` 环境变量直连最快（2.5MB/s）；`.npmrc` 中的 electron_mirror 不被 @electron/get 读取；系统代理 127.0.0.1:7897 可用但绕 npmmirror 会 ECONNRESET，走 GitHub 会超时（20.205.243.166 直连不通）
+  3. 沙箱化 preload（sandbox: true）**不能 require 本地 chunk 文件**：多个 preload 入口共享 @scitool/sdk 模块时 rollup 会拆出 chunks/ 共享块，导致 SDK 注入静默失败（window.sdk undefined）。解法：壳层 preload 只 `import type` SDK 类型、通道常量放 shell 本地（src/shared/shell-channels.ts），保证 app-preload 是 SDK 唯一运行时导入方 → 无 chunk 拆分
+  4. workspace 内 TS 源包（@scitool/sdk 的 main 指向 src/index.ts）必须用 externalizeDepsPlugin({ exclude: ['@scitool/sdk'] }) 强制打进 bundle，否则运行时按 ESM 解析 TS 源码报 ERR_MODULE_NOT_FOUND
+  5. 冒烟测试方式：`SCITOOL_SMOKE_ZIP=<zip> pnpm dev` 自动执行 安装→启动→SDK 探针→卸载 验证链路；开发模式 userData 目录为 %APPDATA%/@scitool/shell（打包后为 %APPDATA%/SciTool）

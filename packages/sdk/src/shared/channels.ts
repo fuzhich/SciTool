@@ -1,0 +1,23 @@
+export const SDK_CHANNELS = {
+  storageGet: 'sdk:storage:get',
+  storageSet: 'sdk:storage:set',
+  storageRemove: 'sdk:storage:remove',
+  settingsGet: 'sdk:settings:get',
+  log: 'sdk:log',
+  uiNotify: 'sdk:ui:notify',
+  uiMinimize: 'sdk:ui:minimize',
+  uiClose: 'sdk:ui:close'
+} as const
+
+export const SHELL_CHANNELS = {
+  appsList: 'platform:apps:list',
+  appsInstall: 'platform:apps:install',
+  appsUninstall: 'platform:apps:uninstall',
+  appsLaunch: 'platform:apps:launch',
+  pickZip: 'platform:pick:zip',
+  settingsGet: 'platform:settings:get',
+  settingsSet: 'platform:settings:set',
+  onAppsChanged: 'platform:apps:changed'
+} as const
+
+export const APP_ID_ARG = 'scitool-app-id'

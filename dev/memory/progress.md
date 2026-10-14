@@ -9,18 +9,30 @@
 - [x] 制定工作流约定（workflow.md）
 - [x] 建立 memory 进度追踪文档结构
 - [x] 初始化 git 仓库与 .gitignore（已验证 dev/secret 被忽略）
-- [x] 配置 GitHub 远程仓库：公开仓库 https://github.com/fuzhich/SciTool ，gh CLI 2.102.0（conda agent-tool 环境），登录账号 fuzhich
+- [x] 配置 GitHub 远程仓库：公开仓库 https://github.com/fuzhich/SciTool ，gh CLI（conda agent-tool 环境），登录账号 fuzhich
+- [x] 需求确认与决策 D1–D11（产品定位、Electron+React+TS、MVP 范围、窗口形态、i18n、视觉风格、架构调研修订）
+- [x] **M1 里程碑完成**：
+  - monorepo：packages/shell（Electron 39 + React 19 + electron-vite 5）、packages/sdk（@scitool/sdk 契约层）、packages/apps/sample-app（开发期示例）
+  - 主进程：应用注册表（JSON）、应用运行时（zip 安装校验/注册/启动/卸载）、权限网关（manifest 白名单）、崩溃恢复（退避重启）、日志/设置/存储服务
+  - 应用窗口：独立进程 + 沙箱 + 独立 session partition + SDK 注入（window.sdk）
+  - 应用中心 UI：Tailwind 极简现代风、应用卡片、安装/启动/卸载、中英切换（i18next）
+  - 验证：冒烟测试打通 安装→启动→SDK 调用（日志/存储/设置/通知）→卸载 全链路；开发者手动 UI 测试通过
+- [x] 环境问题解决：pnpm 12 allowBuilds、ELECTRON_MIRROR 镜像、沙箱 preload chunk 拆分（详见 D12）
 
 ### 进行中
 
-- [ ] 架构设计（architecture.md 草案 v0.1 已完成，待开发者审阅 A1–A4）
+（无）
 
-### 待办（下一步）
+### 待办（下一步 · M2）
 
-- [ ] 开发者审阅架构草案并确认 A1–A4
-- [ ] 搭建 monorepo 项目骨架（packages/shell + packages/sdk）
-- [ ] M1：平台壳 + 应用安装/启动链路 + SDK 最小集
+- [ ] SQLite 引入（better-sqlite3），注册表/存储迁移
+- [ ] `sdk.sharedData`：共享数据 API（命名空间 + 权限域）
+- [ ] `sdk.events`：事件总线（Notifier 模式），支撑跨应用数据流转
+- [ ] 冲突控制：revision 字段
+- [ ] M3 预备：更新通道、NSIS 打包验证
 
 ## 历史进度
 
-（后续每次会话在此追加历史条目）
+- 2026-10-14 会话一：项目初始化 + 版本控制验证
+- 2026-10-14 会话二：需求确认（D1–D11）+ 架构调研（v0.2）
+- 2026-10-14 会话三：M1 实施与全链路验证（D12）

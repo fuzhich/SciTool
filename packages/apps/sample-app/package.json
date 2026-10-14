@@ -1,0 +1,9 @@
+{
+  "name": "@scitool/sample-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SciTool 最小示例应用（开发期验证 SDK 与安装/启动链路，不随产品发布）",
+  "scripts": {
+    "package": "node scripts/package-zip.mjs"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "scitool",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SciTool - 科研工具箱平台",
+  "scripts": {
+    "dev": "pnpm --filter @scitool/shell dev",
+    "build": "pnpm --filter @scitool/shell build",
+    "build:win": "pnpm --filter @scitool/shell build:win",
+    "typecheck": "pnpm --filter @scitool/shell typecheck"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild"
+    ]
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
