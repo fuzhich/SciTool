@@ -13,3 +13,4 @@
 | 2026-10-14 | 数据目录方案：默认安装目录/data、设置页迁移（指针文件+选择性复制+重启）、NSIS 卸载保留 data；开发者实测安装后 data 位置正确 | 决策 D14、data-dir.ts、installer.nsh | 完成 |
 | 2026-10-14 | M2 实施：SQLite（注册表/存储/共享文档）、sdk.sharedData（revision+域名权限）、sdk.events 事件总线、旧数据迁移、SDK v0.2.0；dev 与打包模式冒烟全绿 | 决策 D15、db.ts、shared-data.ts、event-bus.ts | 完成 |
 | 2026-10-14 | M3 实施：平台自更新（electron-updater+设置页）、应用自更新（update.url 全链路）、暗色主题、设置页完善；冒烟验证更新链路 | 决策 D16、updater.ts、app-updater.ts | 完成 |
+| 2026-10-14 | v0.1.0 正式发布 GitHub Release（安装包+latest.yml 更新源上线），处理 electron-builder 双草稿坑 | 决策 D17 | 完成 |

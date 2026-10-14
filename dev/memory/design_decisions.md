@@ -151,7 +151,16 @@
   - **设置页**：主题切换、关于（版本显示）、检查更新（状态+下载+重启安装）、数据目录迁移
   - **坑**：electron-updater 请求 latest.yml 带查询参数，测试 server 需剥离 query string；子应用更新时运行中的窗口会锁文件（Windows），必须先关窗
 - **遗留**：
-  - 平台更新的**真实发布**（GitHub Releases + latest.yml）需 `gh auth token` 发布，待开发者确认后执行
   - 暗色主题视觉效果待开发者目验
-  - 代码签名证书购买（SmartScreen 消除）为外部事项
+  - 代码签名证书购买（SmartScreen 消除）为外部事项 —— 开发者已决定**不签名**（自用/内部分发）
   - 卸载保护（data-backup）实测
+
+### [D17] v0.1.0 发布（2026-10-14）
+
+- **背景**：开发者确认发布 GitHub Release 作为真实更新源
+- **结论**：
+  - 已发布 **v0.1.0**：https://github.com/fuzhich/SciTool/releases/tag/v0.1.0 （公开）
+  - 资产：SciTool-0.1.0-setup.exe（103MB）+ latest.yml（更新清单）+ blockmap
+  - 发布方式：`GH_TOKEN=$(gh auth token) electron-builder --win --publish always`
+  - **坑**：electron-builder 每次发布会创建**两个草稿** release 且文件分散其上（原因未明，疑似多次 publish 流程触发）；工作流：发布后检查 `gh api repos/fuzhich/SciTool/releases`，删除残缺草稿、保留文件齐全的并 `draft=false`，缺的资产用 `gh release upload --clobber` 补齐；**切勿用管道 head 截断发布命令输出**（SIGPIPE 会杀死上传流程）
+  - **网络**：electron-updater v6 走 Electron net 模块（遵循系统代理），本机系统代理可用，更新检查应可达 GitHub；app-updater 用的 Node fetch 不遵循系统代理（子应用更新源建议选国内可达主机）
