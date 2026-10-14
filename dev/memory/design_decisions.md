@@ -104,3 +104,15 @@
   3. 沙箱化 preload（sandbox: true）**不能 require 本地 chunk 文件**：多个 preload 入口共享 @scitool/sdk 模块时 rollup 会拆出 chunks/ 共享块，导致 SDK 注入静默失败（window.sdk undefined）。解法：壳层 preload 只 `import type` SDK 类型、通道常量放 shell 本地（src/shared/shell-channels.ts），保证 app-preload 是 SDK 唯一运行时导入方 → 无 chunk 拆分
   4. workspace 内 TS 源包（@scitool/sdk 的 main 指向 src/index.ts）必须用 externalizeDepsPlugin({ exclude: ['@scitool/sdk'] }) 强制打进 bundle，否则运行时按 ESM 解析 TS 源码报 ERR_MODULE_NOT_FOUND
   5. 冒烟测试方式：`SCITOOL_SMOKE_ZIP=<zip> pnpm dev` 自动执行 安装→启动→SDK 探针→卸载 验证链路；开发模式 userData 目录为 %APPDATA%/@scitool/shell（打包后为 %APPDATA%/SciTool）
+
+### [D13] 打包分发方案（2026-10-14）
+
+- **背景**：需求——最终产物为 installer.exe，可选定安装目录，安装后有 exe 直接打开
+- **结论**：electron-builder + NSIS 经典安装器：
+  - `oneClick: false` + `allowToChangeInstallationDirectory: true` + `perMachine: false`（每用户安装，无需管理员）
+  - 安装器语言 zh_CN 默认 + en_US，桌面快捷方式 always
+  - 产物：`dist/SciTool-<version>-setup.exe` + `dist/win-unpacked/SciTool.exe`
+  - **坑**：artifactName 用 `${name}` 会得到 `@scitool\shell-setup.exe`（包名含斜杠→子目录，NSIS 写文件失败），必须用 `${productName}`
+  - 镜像：electron-builder 下载 electron/NSIS/winCodeSign 需 `ELECTRON_MIRROR` + `ELECTRON_BUILDER_BINARIES_MIRROR` 环境变量，或 electron-builder.yml 的 `electronDownload.mirror`；git-bash 下静默安装 `/D` 参数传 Unix 路径会失败（安装向导交互模式正常）
+  - **已验证**：开发者手动安装到 D:\Apps\SciTool 成功，启动正常，卸载项已注册
+- **遗留**：exe 未签名（无证书），其他机器首次运行会有 SmartScreen 提示；代码签名证书与自动更新属 M3 范围

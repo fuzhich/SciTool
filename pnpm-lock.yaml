@@ -12,27 +12,12 @@ importers:
 
   packages/shell:
     dependencies:
-      '@electron-toolkit/preload':
-        specifier: ^3.0.2
-        version: 3.0.2(electron@39.8.10(supports-color@7.2.0))
       '@electron-toolkit/utils':
         specifier: ^4.0.0
         version: 4.0.0(electron@39.8.10(supports-color@7.2.0))
-      '@scitool/sdk':
-        specifier: workspace:*
-        version: link:../sdk
       extract-zip:
         specifier: ^2.0.1
         version: 2.0.1(supports-color@7.2.0)
-      i18next:
-        specifier: ^25.6.0
-        version: 25.10.10(typescript@5.9.3)
-      react-i18next:
-        specifier: ^16.3.0
-        version: 16.6.6(i18next@25.10.10(typescript@5.9.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3)
-      zustand:
-        specifier: ^5.0.8
-        version: 5.0.15(@types/react@19.3.0)(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0))
     devDependencies:
       '@electron-toolkit/eslint-config-prettier':
         specifier: ^3.0.0
@@ -43,6 +28,9 @@ importers:
       '@electron-toolkit/tsconfig':
         specifier: ^2.0.0
         version: 2.0.0(@types/node@22.20.5)
+      '@scitool/sdk':
+        specifier: workspace:*
+        version: link:../sdk
       '@tailwindcss/vite':
         specifier: ^4.1.11
         version: 4.3.3(vite@7.3.7(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.32.0))
@@ -79,6 +67,9 @@ importers:
       eslint-plugin-react-refresh:
         specifier: ^0.4.24
         version: 0.4.26(eslint@9.39.5(jiti@2.7.0)(supports-color@7.2.0))
+      i18next:
+        specifier: ^25.6.0
+        version: 25.10.10(typescript@5.9.3)
       prettier:
         specifier: ^3.7.4
         version: 3.9.10
@@ -88,6 +79,9 @@ importers:
       react-dom:
         specifier: ^19.2.1
         version: 19.3.0(react@19.3.0)
+      react-i18next:
+        specifier: ^16.3.0
+        version: 16.6.6(i18next@25.10.10(typescript@5.9.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.9.3)
       tailwindcss:
         specifier: ^4.1.11
         version: 4.3.3
@@ -97,6 +91,9 @@ importers:
       vite:
         specifier: ^7.2.6
         version: 7.3.7(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.32.0)
+      zustand:
+        specifier: ^5.0.8
+        version: 5.0.15(@types/react@19.3.0)(react@19.3.0)(use-sync-external-store@1.7.0(react@19.3.0))
 
 packages:
 
@@ -207,11 +204,6 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
-
-  '@electron-toolkit/preload@3.0.2':
-    resolution: {integrity: sha512-TWWPToXd8qPRfSXwzf5KVhpXMfONaUuRAZJHsKthKgZR/+LqX1dZVSSClQ8OTAEduvLGdecljCsoT2jSshfoUg==}
-    peerDependencies:
-      electron: '>=13.0.0'
 
   '@electron-toolkit/tsconfig@2.0.0':
     resolution: {integrity: sha512-AdPsP770WhW7b260h13SHMdmjEEHJL6xFtgi3jwgdsSQbJOkJLeNnnpZW9qxTPCvmRI6vmdzWz5K3gibFS6SNg==}
@@ -3065,10 +3057,6 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
-
-  '@electron-toolkit/preload@3.0.2(electron@39.8.10(supports-color@7.2.0))':
-    dependencies:
-      electron: 39.8.10(supports-color@7.2.0)
 
   '@electron-toolkit/tsconfig@2.0.0(@types/node@22.20.5)':
     dependencies:

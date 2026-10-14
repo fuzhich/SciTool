@@ -1,5 +1,7 @@
 appId: com.scitool.platform
 productName: SciTool
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/
 directories:
   buildResources: build
 files:
@@ -13,11 +15,20 @@ asarUnpack:
   - resources/**
 win:
   executableName: SciTool
+  target:
+    - nsis
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${productName}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+  installerLanguages:
+    - zh_CN
+    - en_US
+  language: 2052
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
