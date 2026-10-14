@@ -2,8 +2,8 @@
 
 | 字段 | 内容 |
 |------|------|
-| 时间 | 2026-10-14（待提交） |
-| Hash | 见 git log |
-| 提交信息 | feat: M1 平台壳——应用中心/应用运行时/SDK 最小集/示例应用全链路验证 |
-| 变更内容 | 新增 packages/ 全部源码、pnpm 工作区配置、.npmrc 镜像配置；更新 memory 文档（D12、进度、时间线） |
-| 涉及文件 | 60+ 文件 |
+| 时间 | 2026-10-14 |
+| Hash | 8fcf3fe |
+| 提交信息 | docs: v0.1.0 发布记录（D17）——更新源上线与双草稿坑处理 |
+| 变更内容 | 记录 v0.1.0 GitHub Release 发布（安装包+latest.yml 更新源上线）、electron-builder 双草稿坑处理流程 |
+| 涉及文件 | dev/memory/design_decisions.md、dev/memory/timeline.md |
