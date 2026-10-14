@@ -86,3 +86,11 @@
   - A3：UI 组件用 Tailwind CSS + 自研 shadcn 风格基础组件
   - A4：MVP 应用安装源仅支持本地 .zip 包，远程应用市场后置
 - **理由**：开发者确认（2026-10-14 会话）
+
+### [D11] 架构修订：采纳同类产品调研模式（2026-10-14）
+
+- **背景**：开发者要求参考 GitHub 上同类产品（star 多/权威）的架构设计，保证拓展性与稳定性
+- **调研对象**：Rubick / uTools（Electron 工具箱平台）、VS Code / Theia（插件架构权威）、Joplin / Zotero（插件化桌面应用）
+- **采纳**：声明式 manifest、独立进程隔离（Extension Host 模式）、SDK 只增不改+minSdkVersion、数据经平台 API 访问（学 Joplin 不学 Zotero）、事件总线（Zotero Notifier）、应用中心=注册中心、轻量服务注册表
+- **规避**：preload 全量权限（改权限清单+白名单）、UI 锁死宿主面板、应用同进程、更新机制缺失、API 无版本管理
+- **产出**：architecture.md v0.2
