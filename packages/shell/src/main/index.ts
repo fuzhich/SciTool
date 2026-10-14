@@ -1,4 +1,5 @@
 import { app, shell, BrowserWindow } from 'electron'
+import { SDK_VERSION } from '@scitool/sdk'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -9,6 +10,7 @@ import { registerSdkServices } from './sdk-service'
 import { registerShellServices, setShellWindow } from './shell-service'
 import { writeLog } from './logger'
 import { applyDataDir, moveDataDir } from './data-dir'
+import { closeDb, getDb } from './db'
 
 function createShellWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
@@ -63,10 +65,11 @@ app.whenReady().then(() => {
   })
 
   ensureAppsDir()
+  getDb()
   registerSdkServices()
   registerShellServices()
   createShellWindow()
-  writeLog('platform', 'info', `SciTool platform started, SDK v0.1.0, dataDir=${app.getPath('userData')}`)
+  writeLog('platform', 'info', `SciTool platform started, SDK v${SDK_VERSION}, dataDir=${app.getPath('userData')}`)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createShellWindow()
@@ -93,6 +96,40 @@ app.whenReady().then(() => {
             writeLog('smoke', 'error', `probe failed: ${err instanceof Error ? err.message : String(err)}`)
           }
         }, 4000)
+        setTimeout(async () => {
+          try {
+            await win.webContents.executeJavaScript(
+              `window.sdk.events.subscribe('papers', (e) => { (window.__evtLog = window.__evtLog || []).push(e.type + ':' + e.doc.id) }).then(() => { window.__subOk = true })`
+            )
+            writeLog('smoke', 'info', 'shared events subscribed')
+          } catch (err) {
+            writeLog('smoke', 'error', `subscribe failed: ${err instanceof Error ? err.message : String(err)}`)
+          }
+        }, 5500)
+        setTimeout(async () => {
+          try {
+            const sharedProbe = await win.webContents.executeJavaScript(`(async () => {
+              const put = await window.sdk.sharedData.put('papers/smoke-1', { hello: 'world' }, { domain: 'papers' })
+              const get = await window.sdk.sharedData.get('papers/smoke-1')
+              const conflict = await window.sdk.sharedData.put('papers/smoke-1', { x: 1 }, { domain: 'papers', expectedRevision: 99 })
+              const list = await window.sdk.sharedData.list({ domain: 'papers' })
+              await window.sdk.storage.set('smoke', 1)
+              const sget = await window.sdk.storage.get('smoke')
+              return JSON.stringify({ putRev: put.ok ? put.data.revision : put.error, getData: get.ok ? get.data.data : get.error, conflictErr: conflict.error, count: list.ok ? list.data.length : -1, storage: sget.ok ? sget.data : sget.error })
+            })()`)
+            writeLog('smoke', 'info', `sharedProbe: ${sharedProbe}`)
+          } catch (err) {
+            writeLog('smoke', 'error', `shared probe failed: ${err instanceof Error ? err.message : String(err)}`)
+          }
+        }, 6500)
+        setTimeout(async () => {
+          try {
+            const evtLog = await win.webContents.executeJavaScript(`JSON.stringify(window.__evtLog || [])`)
+            writeLog('smoke', 'info', `eventLog: ${evtLog}`)
+          } catch (err) {
+            writeLog('smoke', 'error', `event log failed: ${err instanceof Error ? err.message : String(err)}`)
+          }
+        }, 7500)
         setTimeout(async () => {
           try {
             await uninstallApp(record.id)
@@ -129,4 +166,8 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('will-quit', () => {
+  closeDb()
 })

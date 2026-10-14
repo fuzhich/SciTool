@@ -6,22 +6,53 @@ import type {
   PlatformSettings,
   Sdk,
   SdkResult,
+  SharedDataPutOptions,
+  SharedDataQuery,
+  SharedDoc,
+  SharedDocEvent,
   StorageResult
 } from '../shared/types'
 
 export interface SdkInvoker {
   invoke<T = unknown>(channel: string, payload?: unknown): Promise<T>
+  on(channel: string, listener: (payload: unknown) => void): () => void
+}
+
+interface SharedDocRow {
+  id: string
+  appId: string
+  domain: string
+  revision: number
+  data: unknown
+  createdAt: string
+  updatedAt: string
+}
+
+function toDoc(row: SharedDocRow): SharedDoc {
+  return {
+    id: row.id,
+    appId: row.appId,
+    domain: row.domain,
+    revision: row.revision,
+    data: typeof row.data === 'string' ? JSON.parse(row.data) : row.data,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  }
 }
 
 export function createSdk(appId: string, invoker: SdkInvoker): Sdk {
   return {
-    version: '0.1.0',
+    version: '0.2.0',
     appId,
     storage: {
       get: async <T = unknown>(key: string): Promise<SdkResult<T | null>> => {
-        const res = await invoker.invoke<StorageResult<T>>(SDK_CHANNELS.storageGet, { key })
-        if (!res.exists) return { ok: true, data: null }
-        return { ok: true, data: res.value }
+        const res = await invoker.invoke<{ ok: boolean; data?: StorageResult<T>; error?: string }>(
+          SDK_CHANNELS.storageGet,
+          { key }
+        )
+        if (!res.ok) return { ok: false, error: res.error }
+        if (!res.data?.exists) return { ok: true, data: null }
+        return { ok: true, data: res.data.value }
       },
       set: async (key: string, value: unknown): Promise<SdkResult> => {
         await invoker.invoke(SDK_CHANNELS.storageSet, { key, value })
@@ -58,6 +89,64 @@ export function createSdk(appId: string, invoker: SdkInvoker): Sdk {
       close: async (): Promise<SdkResult> => {
         await invoker.invoke(SDK_CHANNELS.uiClose)
         return { ok: true }
+      }
+    },
+    sharedData: {
+      get: async (id: string): Promise<SdkResult<SharedDoc | null>> => {
+        const res = await invoker.invoke<{ ok: boolean; data?: SharedDocRow | null; error?: string }>(
+          SDK_CHANNELS.sharedDataGet,
+          { id }
+        )
+        if (!res.ok) return { ok: false, error: res.error }
+        return { ok: true, data: res.data ? toDoc(res.data) : null }
+      },
+      put: async (id: string, data: unknown, options: SharedDataPutOptions): Promise<SdkResult<SharedDoc>> => {
+        const res = await invoker.invoke<{ ok: boolean; data?: SharedDocRow; error?: string }>(
+          SDK_CHANNELS.sharedDataPut,
+          { id, data, options }
+        )
+        if (!res.ok) return { ok: false, error: res.error }
+        return { ok: true, data: toDoc(res.data as SharedDocRow) }
+      },
+      list: async (query?: SharedDataQuery): Promise<SdkResult<SharedDoc[]>> => {
+        const res = await invoker.invoke<{ ok: boolean; data?: SharedDocRow[]; error?: string }>(
+          SDK_CHANNELS.sharedDataList,
+          query ?? {}
+        )
+        if (!res.ok) return { ok: false, error: res.error }
+        return { ok: true, data: (res.data ?? []).map(toDoc) }
+      },
+      remove: async (id: string, expectedRevision?: number): Promise<SdkResult> => {
+        const res = await invoker.invoke<{ ok: boolean; error?: string }>(SDK_CHANNELS.sharedDataRemove, {
+          id,
+          expectedRevision
+        })
+        return res.ok ? { ok: true } : { ok: false, error: res.error }
+      }
+    },
+    events: {
+      subscribe: async (
+        domain: string,
+        callback: (event: SharedDocEvent) => void
+      ): Promise<SdkResult<() => void>> => {
+        const res = await invoker.invoke<{ ok: boolean; data?: { subscriptionId: number }; error?: string }>(
+          SDK_CHANNELS.eventsSubscribe,
+          { domain }
+        )
+        if (!res.ok) return { ok: false, error: res.error }
+        const subId = res.data?.subscriptionId
+        const off = invoker.on(SDK_CHANNELS.eventsNotify, (payload) => {
+          const event = payload as SharedDocEvent & { subscriptionId?: number }
+          if (subId !== undefined && event.subscriptionId !== subId) return
+          callback(event)
+        })
+        return {
+          ok: true,
+          data: () => {
+            off()
+            void invoker.invoke(SDK_CHANNELS.eventsUnsubscribe, { subscriptionId: subId })
+          }
+        }
       }
     }
   }

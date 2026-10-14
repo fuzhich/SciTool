@@ -99,6 +99,46 @@ async function init() {
     const res = await sdk.ui.notify({ title: label('title'), body: new Date().toLocaleString() })
     log(`[notify] ${res.ok ? label('ok') : label('fail')}`)
   })
+  $('btn-doc-put').addEventListener('click', async () => {
+    let data
+    try {
+      data = JSON.parse($('doc-value').value)
+    } catch {
+      data = { value: $('doc-value').value }
+    }
+    const res = await sdk.sharedData.put($('doc-id').value, data, { domain: 'papers' })
+    log(
+      `[sharedData.put] ${res.ok ? label('ok') : label('fail')}: ${res.ok ? JSON.stringify({ rev: res.data.revision }) : res.error}`
+    )
+  })
+  $('btn-doc-get').addEventListener('click', async () => {
+    const res = await sdk.sharedData.get($('doc-id').value)
+    log(`[sharedData.get] ${res.ok ? label('ok') : label('fail')}: ${JSON.stringify(res.data)}`)
+  })
+  $('btn-doc-list').addEventListener('click', async () => {
+    const res = await sdk.sharedData.list({ domain: 'papers' })
+    log(`[sharedData.list] ${res.ok ? label('ok') : label('fail')}: ${res.ok ? res.data.length + ' docs' : res.error}`)
+  })
+  $('btn-events-sub').addEventListener('click', async () => {
+    const res = await sdk.events.subscribe('papers', (event) => {
+      log(`[event:${event.type}] ${event.doc.id} rev=${event.doc.revision}`)
+    })
+    if (res.ok) {
+      eventsUnsub = res.data
+      log(`[events.subscribe] ${label('ok')}`)
+    } else {
+      log(`[events.subscribe] ${label('fail')}: ${res.error}`)
+    }
+  })
+  $('btn-events-unsub').addEventListener('click', () => {
+    if (eventsUnsub) {
+      eventsUnsub()
+      eventsUnsub = null
+      log(`[events.unsubscribe] ${label('ok')}`)
+    }
+  })
 }
+
+let eventsUnsub = null
 
 init()

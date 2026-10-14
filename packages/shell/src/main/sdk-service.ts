@@ -1,59 +1,41 @@
 import { BrowserWindow } from 'electron'
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
-import { join } from 'path'
 import { SDK_CHANNELS, type LogPayload, type NotificationOptions } from '@scitool/sdk'
-import { appStorageDir } from './paths'
+import { getDb } from './db'
 import { registerSdkHandler } from './permission-gateway'
 import { getSettings } from './settings-store'
 import { notifyUser } from './app-manager'
 import { writeLog } from './logger'
-
-interface StorageFile {
-  [key: string]: unknown
-}
-
-function storageFile(appId: string): string {
-  return join(appStorageDir(), `${appId}.json`)
-}
-
-function loadStorage(appId: string): StorageFile {
-  try {
-    if (existsSync(storageFile(appId))) {
-      return JSON.parse(readFileSync(storageFile(appId), 'utf-8')) as StorageFile
-    }
-  } catch {
-    // 损坏则重建
-  }
-  return {}
-}
-
-function saveStorage(appId: string, data: StorageFile): void {
-  mkdirSync(appStorageDir(), { recursive: true })
-  writeFileSync(storageFile(appId), JSON.stringify(data, null, 2), 'utf-8')
-}
+import { getSharedDoc, listSharedDocs, putSharedDoc, removeSharedDoc } from './shared-data'
+import { getAppDomainAccess } from './app-registry'
+import { subscribeEvents, unsubscribeEvents } from './event-bus'
 
 export function registerSdkServices(): void {
+  const db = getDb()
+
   registerSdkHandler(SDK_CHANNELS.storageGet, (_e, payload, appId) => {
     const { key } = payload as { key: string }
     if (typeof key !== 'string') return { ok: false, error: 'key 非法' }
-    const data = loadStorage(appId)
-    return { ok: true, data: key in data ? { exists: true, value: data[key] } : { exists: false, value: null } }
+    const row = db.prepare(`SELECT value FROM kv_store WHERE app_id = ? AND key = ?`).get(appId, key) as
+      | { value: string }
+      | undefined
+    if (!row) return { ok: true, data: { exists: false, value: null } }
+    return { ok: true, data: { exists: true, value: JSON.parse(row.value) } }
   })
 
   registerSdkHandler(SDK_CHANNELS.storageSet, (_e, payload, appId) => {
     const { key, value } = payload as { key: string; value: unknown }
     if (typeof key !== 'string') return { ok: false, error: 'key 非法' }
-    const data = loadStorage(appId)
-    data[key] = value
-    saveStorage(appId, data)
+    db.prepare(`INSERT OR REPLACE INTO kv_store (app_id, key, value) VALUES (?, ?, ?)`).run(
+      appId,
+      key,
+      JSON.stringify(value)
+    )
     return { ok: true }
   })
 
   registerSdkHandler(SDK_CHANNELS.storageRemove, (_e, payload, appId) => {
     const { key } = payload as { key: string }
-    const data = loadStorage(appId)
-    delete data[key]
-    saveStorage(appId, data)
+    db.prepare(`DELETE FROM kv_store WHERE app_id = ? AND key = ?`).run(appId, key)
     return { ok: true }
   })
 
@@ -80,6 +62,48 @@ export function registerSdkServices(): void {
 
   registerSdkHandler(SDK_CHANNELS.uiClose, (event) => {
     BrowserWindow.fromWebContents(event.sender)?.close()
+    return { ok: true }
+  })
+
+  // === M2: 共享数据 + 事件总线 ===
+
+  registerSdkHandler(SDK_CHANNELS.sharedDataGet, (_e, payload, appId) => {
+    const { id } = payload as { id: string }
+    return { ok: true, data: getSharedDoc(appId, id) }
+  })
+
+  registerSdkHandler(SDK_CHANNELS.sharedDataPut, (_e, payload, appId) => {
+    const { id, data, options } = payload as {
+      id: string
+      data: unknown
+      options: { domain: string; expectedRevision?: number }
+    }
+    const doc = putSharedDoc(appId, id, data, options.domain, options.expectedRevision)
+    return { ok: true, data: doc }
+  })
+
+  registerSdkHandler(SDK_CHANNELS.sharedDataList, (_e, payload, appId) => {
+    const { domain } = (payload ?? {}) as { domain?: string }
+    return { ok: true, data: listSharedDocs(appId, domain) }
+  })
+
+  registerSdkHandler(SDK_CHANNELS.sharedDataRemove, (_e, payload, appId) => {
+    const { id, expectedRevision } = payload as { id: string; expectedRevision?: number }
+    removeSharedDoc(appId, id, expectedRevision)
+    return { ok: true }
+  })
+
+  registerSdkHandler(SDK_CHANNELS.eventsSubscribe, (event, payload, appId) => {
+    const { domain } = payload as { domain: string }
+    const access = getAppDomainAccess(appId, domain)
+    if (access === null) return { ok: false, error: `应用未获授权访问域名: ${domain}` }
+    const subId = subscribeEvents(event.sender.id, domain)
+    return { ok: true, data: { subscriptionId: subId } }
+  })
+
+  registerSdkHandler(SDK_CHANNELS.eventsUnsubscribe, (_e, payload) => {
+    const { subscriptionId } = payload as { subscriptionId: number }
+    unsubscribeEvents(subscriptionId)
     return { ok: true }
   })
 }

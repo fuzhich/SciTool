@@ -43,6 +43,20 @@
           <button id="btn-log">写日志</button>
           <button id="btn-notify">发通知</button>
         </div>
+        <div class="divider"></div>
+        <div class="action-row">
+          <input id="doc-id" value="papers/001" placeholder="doc id" />
+          <input id="doc-value" value="{"title":"示例文献"}" placeholder="doc JSON" />
+        </div>
+        <div class="action-row">
+          <button id="btn-doc-put">写入共享文档</button>
+          <button id="btn-doc-get">读取共享文档</button>
+          <button id="btn-doc-list">列出 papers 域</button>
+        </div>
+        <div class="action-row">
+          <button id="btn-events-sub">订阅 papers 事件</button>
+          <button id="btn-events-unsub">取消订阅</button>
+        </div>
       </section>
 
       <pre id="output" class="output">点击按钮查看 SDK 调用结果…</pre>

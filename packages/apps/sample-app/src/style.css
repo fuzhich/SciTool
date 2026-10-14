@@ -80,6 +80,12 @@ code {
   gap: 12px;
 }
 
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
 .action-row {
   display: flex;
   gap: 8px;

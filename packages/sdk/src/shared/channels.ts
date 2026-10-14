@@ -6,7 +6,14 @@ export const SDK_CHANNELS = {
   log: 'sdk:log',
   uiNotify: 'sdk:ui:notify',
   uiMinimize: 'sdk:ui:minimize',
-  uiClose: 'sdk:ui:close'
+  uiClose: 'sdk:ui:close',
+  sharedDataGet: 'sdk:shared-data:get',
+  sharedDataPut: 'sdk:shared-data:put',
+  sharedDataList: 'sdk:shared-data:list',
+  sharedDataRemove: 'sdk:shared-data:remove',
+  eventsSubscribe: 'sdk:events:subscribe',
+  eventsUnsubscribe: 'sdk:events:unsubscribe',
+  eventsNotify: 'sdk:events:notify'
 } as const
 
 export const SHELL_CHANNELS = {

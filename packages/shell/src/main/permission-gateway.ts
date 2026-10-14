@@ -1,5 +1,6 @@
 import { ipcMain, type IpcMainInvokeEvent } from 'electron'
 import { SDK_CHANNELS, type Permission } from '@scitool/sdk'
+import { clearSubscriptionsForWebContents } from './event-bus'
 
 const CHANNEL_PERMISSION: Record<string, Permission> = {
   [SDK_CHANNELS.storageGet]: 'storage',
@@ -9,7 +10,13 @@ const CHANNEL_PERMISSION: Record<string, Permission> = {
   [SDK_CHANNELS.log]: 'log',
   [SDK_CHANNELS.uiNotify]: 'ui',
   [SDK_CHANNELS.uiMinimize]: 'ui',
-  [SDK_CHANNELS.uiClose]: 'ui'
+  [SDK_CHANNELS.uiClose]: 'ui',
+  [SDK_CHANNELS.sharedDataGet]: 'sharedData',
+  [SDK_CHANNELS.sharedDataPut]: 'sharedData',
+  [SDK_CHANNELS.sharedDataList]: 'sharedData',
+  [SDK_CHANNELS.sharedDataRemove]: 'sharedData',
+  [SDK_CHANNELS.eventsSubscribe]: 'events',
+  [SDK_CHANNELS.eventsUnsubscribe]: 'events'
 }
 
 export interface AppWindowEntry {
@@ -25,6 +32,7 @@ export function registerAppWindow(webContentsId: number, entry: AppWindowEntry):
 
 export function unregisterAppWindow(webContentsId: number): void {
   appWindows.delete(webContentsId)
+  clearSubscriptionsForWebContents(webContentsId)
 }
 
 export function appIdOfSender(event: IpcMainInvokeEvent): string | null {

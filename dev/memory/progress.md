@@ -20,18 +20,24 @@
 - [x] 环境问题解决：pnpm 12 allowBuilds、ELECTRON_MIRROR 镜像、沙箱 preload chunk 拆分（详见 D12）
 - [x] **打包分发**：NSIS 可选目录安装器（SciTool-0.1.0-setup.exe），开发者实测安装到 D:\Apps\SciTool 并启动成功；卸载项注册正常（D13）
 - [x] **数据目录方案**：默认 `<安装目录>\data`；设置页迁移（指针+选择性复制+重启）；卸载保留 data（NSIS 脚本）；开发者实测安装后 data 位置正确（D14）
+- [x] **M2 里程碑完成**（D15）：
+  - SQLite（better-sqlite3）：注册表/私有存储/共享文档入 `data/scitool.db`（WAL）；旧 JSON 自动迁移+备份
+  - `sdk.sharedData`：get/put/list/remove，revision 冲突控制，域名权限域（manifest sharedDomains → app_domains 校验）
+  - `sdk.events`：域名订阅 → created/updated/removed 事件推送（Notifier 模式），窗口关闭自动清理
+  - SDK v0.2.0；修复 M1 遗留 storage.get 解析 bug
+  - dev 与打包模式冒烟全绿
 
 ### 进行中
 
 （无）
 
-### 待办（下一步 · M2）
+### 待办（下一步 · M3）
 
-- [ ] SQLite 引入（better-sqlite3），注册表/存储迁移
-- [ ] `sdk.sharedData`：共享数据 API（命名空间 + 权限域）
-- [ ] `sdk.events`：事件总线（Notifier 模式），支撑跨应用数据流转
-- [ ] 冲突控制：revision 字段
-- [ ] M3 预备：更新通道、NSIS 打包验证
+- [ ] 更新通道（应用自更新 + 平台自更新，electron-updater）
+- [ ] 完整 i18n 覆盖与细节打磨（暗色主题等）
+- [ ] 错误处理完善、应用中心交互优化（启动状态、多开控制）
+- [ ] 代码签名证书（SmartScreen 消除）
+- [ ] 卸载保护实测（卸载 → data-backup 链路）
 
 ## 历史进度
 

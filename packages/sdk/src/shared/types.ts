@@ -1,4 +1,4 @@
-export const SDK_VERSION = '0.1.0'
+export const SDK_VERSION = '0.2.0'
 
 export type Permission =
   | 'storage'
@@ -23,7 +23,30 @@ export interface AppManifest {
   icon?: string
   entry: string
   permissions: Permission[]
+  sharedDomains?: SharedDomainGrant[]
   update?: { url?: string }
+}
+
+export interface SharedDomainGrant {
+  domain: string
+  access: 'read' | 'write'
+}
+
+export interface SharedDoc {
+  id: string
+  appId: string
+  domain: string
+  revision: number
+  data: unknown
+  createdAt: string
+  updatedAt: string
+}
+
+export type SharedDocEventType = 'created' | 'updated' | 'removed'
+
+export interface SharedDocEvent {
+  type: SharedDocEventType
+  doc: SharedDoc
 }
 
 export interface AppRecord {
@@ -79,6 +102,15 @@ export interface SdkUi {
   close: () => Promise<SdkResult>
 }
 
+export interface SharedDataQuery {
+  domain?: string
+}
+
+export interface SharedDataPutOptions {
+  domain: string
+  expectedRevision?: number
+}
+
 export interface Sdk {
   version: string
   appId: string
@@ -93,4 +125,13 @@ export interface Sdk {
   }
   log: (level: LogPayload['level'], message: string, data?: unknown) => Promise<SdkResult>
   ui: SdkUi
+  sharedData: {
+    get: (id: string) => Promise<SdkResult<SharedDoc | null>>
+    put: (id: string, data: unknown, options: SharedDataPutOptions) => Promise<SdkResult<SharedDoc>>
+    list: (query?: SharedDataQuery) => Promise<SdkResult<SharedDoc[]>>
+    remove: (id: string, expectedRevision?: number) => Promise<SdkResult>
+  }
+  events: {
+    subscribe: (domain: string, callback: (event: SharedDocEvent) => void) => Promise<SdkResult<() => void>>
+  }
 }

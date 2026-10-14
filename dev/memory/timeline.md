@@ -11,3 +11,4 @@
 | 2026-10-14 | M1 实施：monorepo 搭建（shell/sdk/sample-app）、主进程（注册表/权限网关/生命周期/崩溃恢复）、SDK 最小集、应用中心 UI（Tailwind 极简风+中英 i18n）、冒烟测试验证 安装→启动→SDK→卸载 全链路 | packages/ 全部源码、决策 D12 | 完成 |
 | 2026-10-14 | 打包分发：NSIS 可选目录安装器配置与构建（93.8MB），开发者手动安装至 D:\Apps\SciTool 验证成功 | SciTool-0.1.0-setup.exe、决策 D13 | 完成 |
 | 2026-10-14 | 数据目录方案：默认安装目录/data、设置页迁移（指针文件+选择性复制+重启）、NSIS 卸载保留 data；开发者实测安装后 data 位置正确 | 决策 D14、data-dir.ts、installer.nsh | 完成 |
+| 2026-10-14 | M2 实施：SQLite（注册表/存储/共享文档）、sdk.sharedData（revision+域名权限）、sdk.events 事件总线、旧数据迁移、SDK v0.2.0；dev 与打包模式冒烟全绿 | 决策 D15、db.ts、shared-data.ts、event-bus.ts | 完成 |

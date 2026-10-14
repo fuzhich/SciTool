@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync } from 'fs'
 import { join } from 'path'
 import extract from 'extract-zip'
 import { SDK_VERSION, type AppManifest, type AppRecord, type Permission } from '@scitool/sdk'
-import { addAppRecord, getAppRecord, removeAppRecord, loadRegistry } from './app-registry'
+import { addAppRecord, getAppRecord, removeAppRecord, loadRegistry, setAppDomains } from './app-registry'
 import { appDir, appsDir } from './paths'
 import { registerAppWindow, unregisterAppWindow } from './permission-gateway'
 import { getSettings } from './settings-store'
@@ -25,6 +25,15 @@ export function validateManifest(manifest: unknown): string | null {
   if (!Array.isArray(m.permissions)) return '权限清单缺失'
   for (const p of m.permissions) {
     if (!KNOWN_PERMISSIONS.includes(p)) return `未知权限声明: ${p}`
+  }
+  if (m.sharedDomains !== undefined) {
+    if (!Array.isArray(m.sharedDomains)) return 'sharedDomains 需为数组'
+    for (const g of m.sharedDomains) {
+      if (!g || typeof g.domain !== 'string' || !/^[a-z][a-z0-9-]{0,63}$/.test(g.domain)) {
+        return `共享域名非法: ${JSON.stringify(g)}`
+      }
+      if (g.access !== 'read' && g.access !== 'write') return `共享域名权限非法: ${g.domain}`
+    }
   }
   return null
 }
@@ -76,6 +85,9 @@ export async function installApp(zipPath: string): Promise<AppRecord> {
     installedAt: new Date().toISOString()
   }
   addAppRecord(record)
+  if (manifest.sharedDomains) {
+    setAppDomains(manifest.id, manifest.sharedDomains)
+  }
   writeLog('platform', 'info', `app installed: ${manifest.id}@${manifest.version}`)
   return record
 }

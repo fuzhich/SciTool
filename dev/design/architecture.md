@@ -136,12 +136,11 @@ app-package.zip
 
 ## 6. 数据共享设计（M2 范围，D5 后置原则）
 
-- **存储**：SQLite（better-sqlite3）——嵌入式单文件数据库，无需安装任何数据库软件，引擎编译进安装包；数据库文件位于**用户数据目录**（`%APPDATA%/SciTool/data/scitool.db`），**不放在安装目录**（卸载/升级不丢数据、无需写权限、多用户隔离）；M1 注册表暂用 JSON，M2 迁移
+- **存储**：SQLite（better-sqlite3）——嵌入式单文件数据库，无需安装任何数据库软件，引擎编译进安装包；数据库文件位于**数据目录** `data/scitool.db`（WAL 模式）✅ **M2 已实现**（注册表/私有存储/共享文档均已入 SQLite，详见 D15）
 - **数据目录规划**（默认 `<安装目录>\data`，可经设置页迁移；开发模式为 `%APPDATA%/@scitool/shell/`；无写权限时回退 `%APPDATA%/SciTool/`，详见 D14）：
-  - `registry.json` 应用注册表（M2 迁入 SQLite）
+  - `data/scitool.db` 平台 SQLite ✅（apps 注册表、app_domains 域名授权、kv_store 私有存储、shared_docs 共享文档）
   - `apps/<app-id>/` 已安装应用
-  - `app-storage/<app-id>.json` 应用私有数据（M2 迁入 SQLite）
-  - `data/scitool.db` 平台 SQLite（M2 新增：共享数据 + 注册表 + 存储）
+  - `legacy-json-backup/` M1 JSON 数据迁移后的备份
   - `logs/` 平台与应用日志
   - 卸载时 data 自动保留至 `%LOCALAPPDATA%\SciTool\data-backup`（NSIS 自定义卸载脚本）
 - **访问方式**：应用**不直连数据库**，一律经 `sdk.sharedData` API 读写；每应用有命名空间与权限域（学 Joplin 而非 Zotero）

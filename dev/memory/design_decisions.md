@@ -127,3 +127,16 @@
   - **坑**：整体复制 userData 会因 Chromium 缓存文件被运行中的应用锁定而 EACCES —— 必须选择性迁移，跳过 Cache/GPUCache 等可再生目录
   - **卸载保护**：NSIS include 脚本（build/installer.nsh）customUnInstall —— 卸载时把 data 移到 `%LOCALAPPDATA%\SciTool\data-backup` 并弹提示
 - **验证**：打包模式数据落于安装目录/data（开发者手动安装实测）；迁移链路（复制+指针+重启生效）冒烟通过；卸载保护脚本已随安装器打包（卸载流程建议后续实测）
+
+### [D15] M2 数据共享实现（2026-10-14）
+
+- **背景**：M2 里程碑——SQLite 引入、共享数据 API、事件总线
+- **结论**：
+  - **存储**：better-sqlite3 13（预编译二进制经系统代理下载，electron ABI 经 install-app-deps 重编译）；数据库 `data/scitool.db`（WAL 模式）
+  - **Schema**：`platform_meta`（迁移标记）、`apps`（注册表，替代 registry.json）、`app_domains`（域名授权）、`kv_store`（应用私有存储，替代 app-storage/*.json）、`shared_docs`（共享文档：id/app_id/domain/revision/data/时间戳）
+  - **旧数据迁移**：首次启动自动迁移 registry.json + app-storage → SQLite，原文件移至 `legacy-json-backup/`；幂等（platform_meta 标记）
+  - **sdk.sharedData**：get/put/list/remove；put 带 revision 冲突检测（expectedRevision 不匹配即拒绝）；**域名权限域**：应用经 manifest `sharedDomains: [{domain, access}]` 声明授权（安装时校验），运行时按 app_domains 校验读写
+  - **sdk.events**：订阅域名 → 文档 created/updated/removed 事件推送到订阅窗口（Notifier 模式）；窗口关闭自动清理订阅；跨重启 revision 持续递增（WAL 持久化）
+  - **SDK v0.2.0**：minSdkVersion 校验生效（示例应用升 0.2.0）
+  - **修复 M1 遗留 bug**：storage.get 客户端响应解析错误（envelope 未解包，恒返 null）——M1 冒烟未覆盖读路径，M2 冒烟补齐
+- **验证**：dev 与打包模式冒烟全绿（读写/冲突/事件/迁移/存储）
