@@ -240,119 +240,119 @@ export default function App(): React.JSX.Element {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <header className="sticky top-0 z-10 border-b border-zinc-200/80 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+    <div className="flex h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      <div className="flex min-h-0 flex-1">
+        {/* 左侧边栏：品牌 + 导航（应用/市场） */}
+        <aside className="flex w-52 shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex items-center gap-2.5 px-4 py-4">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
               S
             </div>
-            <div>
-              <span className="text-[15px] font-semibold">{t('appName')}</span>
-              <span className="ml-2 text-[13px] text-zinc-400 dark:text-zinc-500">{t('slogan')}</span>
+            <div className="min-w-0">
+              <div className="text-[13px] font-semibold">{t('appName')}</div>
+              <div className="truncate text-[11px] text-zinc-400 dark:text-zinc-500">{t('slogan')}</div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex rounded-lg bg-zinc-100 p-0.5 dark:bg-zinc-800">
+          <nav className="flex-1 space-y-1 px-2 py-2">
+            {(['apps', 'market'] as const).map((v) => (
               <button
+                key={v}
                 type="button"
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  view === 'apps' ? 'bg-white text-zinc-800 shadow-sm dark:bg-zinc-900 dark:text-zinc-100' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'
+                className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors ${
+                  view === v
+                    ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-950/60 dark:text-blue-400'
+                    : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800'
                 }`}
-                onClick={() => setView('apps')}
+                onClick={() => setView(v)}
               >
-                {t('appsTab')}
+                <span>{v === 'apps' ? '📦' : '🛍️'}</span>
+                {t(v === 'apps' ? 'appsTab' : 'market')}
               </button>
-              <button
-                type="button"
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  view === 'market' ? 'bg-white text-zinc-800 shadow-sm dark:bg-zinc-900 dark:text-zinc-100' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'
-                }`}
-                onClick={() => setView('market')}
-              >
-                {t('market')}
-              </button>
-            </div>
-            <Button size="sm" variant="ghost" onClick={toggleLanguage}>
-              {settings.language === 'zh' ? 'EN' : '中文'}
-            </Button>
-            <Button size="sm" variant="ghost" onClick={toggleTheme} title={t('theme')}>
-              {settings.theme === 'dark' ? '☀️' : '🌙'}
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setSettingsOpen(true)}>
-              {t('settings')}
-            </Button>
-            <Button size="sm" disabled={installing} onClick={onInstall}>
-              {installing ? '…' : t('install')}
-            </Button>
+            ))}
+          </nav>
+          <div className="border-t border-zinc-200 px-4 py-3 text-[11px] text-zinc-400 dark:border-zinc-800 dark:text-zinc-500">
+            SciTool Platform · SDK 0.6.0
           </div>
-        </div>
-      </header>
+        </aside>
 
-      <div className="relative flex min-h-0 flex-1">
-        {view === 'market' ? (
-          <main className="min-w-0 flex-1 overflow-y-auto">
-            <MarketView onLaunch={launchApp} />
-          </main>
-        ) : (
-        <main className="min-w-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-6xl px-6 py-8">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                {t('appCount', { count: apps.length })}
-              </h2>
+        {/* 主区 */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200/80 bg-white/80 px-6 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
+            <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              {view === 'apps' ? t('appCount', { count: apps.length }) : t('market')}
+            </h2>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="ghost" onClick={toggleLanguage}>
+                {settings.language === 'zh' ? 'EN' : '中文'}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={toggleTheme} title={t('theme')}>
+                {settings.theme === 'dark' ? '☀️' : '🌙'}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSettingsOpen(true)}>
+                {t('settings')}
+              </Button>
+              <Button size="sm" disabled={installing} onClick={onInstall}>
+                {installing ? '…' : t('install')}
+              </Button>
             </div>
+          </header>
 
-            {loading ? (
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-                {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-28 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-800/60" />
-                ))}
-              </div>
-            ) : apps.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-4 py-28 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 text-2xl dark:bg-zinc-800">
-                  📦
-                </div>
-                <h3 className="text-[15px] font-semibold text-zinc-800 dark:text-zinc-200">{t('emptyTitle')}</h3>
-                <p className="max-w-sm text-[13px] leading-5 text-zinc-500 dark:text-zinc-400">{t('emptyDesc')}</p>
-                <Button className="mt-2" disabled={installing} onClick={onInstall}>
-                  {t('install')}
-                </Button>
-              </div>
+          <div className="relative flex min-h-0 flex-1">
+            {view === 'market' ? (
+              <main className="min-w-0 flex-1 overflow-y-auto">
+                <MarketView onLaunch={launchApp} />
+              </main>
             ) : (
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-                {apps.map((app) => (
-                  <AppTile
-                    key={app.id}
-                    app={app}
-                    selected={app.id === selectedId}
-                    onSelect={setSelectedId}
-                    onLaunch={launchApp}
-                  />
-                ))}
-              </div>
+              <main className="min-w-0 flex-1 overflow-y-auto">
+                <div className="mx-auto w-full max-w-6xl px-6 py-8">
+                  {loading ? (
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+                      {[0, 1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="h-28 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-800/60" />
+                      ))}
+                    </div>
+                  ) : apps.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center gap-4 py-28 text-center">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 text-2xl dark:bg-zinc-800">
+                        📦
+                      </div>
+                      <h3 className="text-[15px] font-semibold text-zinc-800 dark:text-zinc-200">{t('emptyTitle')}</h3>
+                      <p className="max-w-sm text-[13px] leading-5 text-zinc-500 dark:text-zinc-400">{t('emptyDesc')}</p>
+                      <Button className="mt-2" disabled={installing} onClick={onInstall}>
+                        {t('install')}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+                      {apps.map((app) => (
+                        <AppTile
+                          key={app.id}
+                          app={app}
+                          selected={app.id === selectedId}
+                          onSelect={setSelectedId}
+                          onLaunch={launchApp}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </main>
+            )}
+
+            {view === 'apps' && selected && (
+              <aside className="absolute right-0 top-0 z-20 h-full w-80 border-l border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
+                <DetailPanel
+                  app={selected}
+                  onClose={() => setSelectedId(null)}
+                  onLaunch={launchApp}
+                  onUninstall={uninstallApp}
+                  onCheckUpdate={checkAppUpdate}
+                />
+              </aside>
             )}
           </div>
-        </main>
-        )}
-
-        {view === 'apps' && selected && (
-          <aside className="absolute right-0 top-0 z-20 h-full w-80 border-l border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
-            <DetailPanel
-              app={selected}
-              onClose={() => setSelectedId(null)}
-              onLaunch={launchApp}
-              onUninstall={uninstallApp}
-              onCheckUpdate={checkAppUpdate}
-            />
-          </aside>
-        )}
+        </div>
       </div>
-
-      <footer className="border-t border-zinc-200/80 py-4 text-center text-[11px] text-zinc-400 dark:border-zinc-800 dark:text-zinc-600">
-        SciTool Platform · SDK 0.6.0 · M4
-      </footer>
 
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>

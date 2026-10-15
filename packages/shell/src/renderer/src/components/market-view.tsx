@@ -41,6 +41,7 @@ export function MarketView({ onLaunch }: { onLaunch: (app: AppRecord) => void })
   const [manifest, setManifest] = useState<MarketManifest | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
 
   const load = useCallback(async (): Promise<void> => {
     setError(null)
@@ -69,10 +70,39 @@ export function MarketView({ onLaunch }: { onLaunch: (app: AppRecord) => void })
 
   const lang = i18nInst.language === 'en' ? 'en' : 'zh'
 
+  const q = query.trim().toLowerCase()
+  const filtered = (manifest?.apps ?? []).filter((app) => {
+    if (!q) return true
+    return (
+      app.name.zh.toLowerCase().includes(q) ||
+      app.name.en.toLowerCase().includes(q) ||
+      app.description.zh.toLowerCase().includes(q) ||
+      app.description.en.toLowerCase().includes(q)
+    )
+  })
+
   return (
     <div className="mx-auto w-full max-w-6xl px-6 py-8">
-      <div className="mb-6">
-        <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+      <div className="mb-6 flex items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 dark:border-zinc-700 dark:bg-zinc-950">
+          <span className="text-[13px] text-zinc-400">🔍</span>
+          <input
+            className="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-zinc-800 outline-none dark:text-zinc-100"
+            placeholder={t('marketSearch')}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {query && (
+            <button
+              type="button"
+              className="text-[12px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              onClick={() => setQuery('')}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        <h2 className="shrink-0 text-sm font-medium text-zinc-500 dark:text-zinc-400">
           {t('marketDesc')}
         </h2>
       </div>
@@ -88,9 +118,11 @@ export function MarketView({ onLaunch }: { onLaunch: (app: AppRecord) => void })
         <p className="py-20 text-center text-[13px] text-zinc-400">{t('marketLoading')}</p>
       ) : manifest.apps.length === 0 ? (
         <p className="py-20 text-center text-[13px] text-zinc-400">{t('marketEmpty')}</p>
+      ) : filtered.length === 0 ? (
+        <p className="py-20 text-center text-[13px] text-zinc-400">{t('marketSearchEmpty')}</p>
       ) : (
         <div className="space-y-3">
-          {manifest.apps.map((app) => {
+          {filtered.map((app) => {
             const installed = apps.find((a) => a.id === app.id)
             const installedVer = installed?.version ?? ''
             const status: 'install' | 'update' | 'open' = !installed
