@@ -27,6 +27,9 @@ export function TableBlockView({
     const nextRows = block.rows.map((r, i) => (i === rowIdx ? { ...r, [colId]: value } : r))
     onChange({ ...block, rows: nextRows })
   }
+  const patchColumnName = (colId: string, name: string): void => {
+    onChange({ ...block, columns: block.columns.map((c) => (c.id === colId ? { ...c, name } : c)) })
+  }
   const addRow = (): void => {
     const row: Record<string, string> = {}
     for (const c of block.columns) row[c.id] = ''
@@ -73,7 +76,7 @@ export function TableBlockView({
                   key={c.id}
                   className="whitespace-nowrap border-b border-zinc-200 bg-zinc-100 px-3 py-2 text-left font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
                 >
-                  {c.name || '—'}
+                  <InlineCaption value={c.name} onChange={(name) => patchColumnName(c.id, name)} className="min-w-8" />
                   {c.unit && <span className="ml-1 text-[11px] font-normal text-zinc-400 dark:text-zinc-500">({c.unit})</span>}
                 </th>
               ))}

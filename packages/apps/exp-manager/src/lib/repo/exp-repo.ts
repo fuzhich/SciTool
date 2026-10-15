@@ -141,10 +141,18 @@ export class ExpRepo {
   }
 
   async moveNode(id: string, parentId: string | null, revision?: number): Promise<void> {
-    const node = (await this.listNodes()).find((n) => n.id === id)
+    const nodes = await this.listNodes()
+    const node = nodes.find((n) => n.id === id)
     if (!node) throw new Error('节点不存在')
     const rev = revision ?? node.revision
     if (node.kind === 'folder') {
+      // 环防护：目标不能是自身或其后代
+      let cursor = parentId
+      while (cursor !== null) {
+        if (cursor === id) throw new Error('不能移动到自身或其子文件夹')
+        const target = nodes.find((n) => n.kind === 'folder' && n.id === cursor) as FolderNode | undefined
+        cursor = target?.parentId ?? null
+      }
       await this.putDoc(
         id,
         { kind: 'folder', name: node.name, parentId, createdAt: node.createdAt },

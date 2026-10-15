@@ -2,9 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { marked } from 'marked'
 import type { TextBlock } from '../../lib/expdoc'
 
-// 无缝内联编辑（类 Typora）：编辑态无边框无底色，直接在渲染页面上打字；
-// 失焦后渲染 markdown。contentEditable 非受控（进入编辑时同步内容一次），
-// 避免 React 重渲染重置光标。
+const autoResize = (ta: HTMLTextAreaElement): void => {
+  ta.style.height = 'auto'
+  ta.style.height = `${Math.max(ta.scrollHeight, 28)}px`
+}
+
+// 无缝内联编辑（类 Typora）：无边框透明自动伸缩 textarea，视觉上即在
+// 渲染页面上直接打字；失焦渲染 markdown。textarea 受控，无
+// contentEditable 的换行/光标怪癖；Enter 新建下方文本块。
 export function TextBlockView({
   block,
   initialEditing = false,
@@ -17,45 +22,35 @@ export function TextBlockView({
   onEnterNewBlock?: () => void
 }): React.JSX.Element {
   const [editing, setEditing] = useState(initialEditing)
-  const editRef = useRef<HTMLDivElement>(null)
+  const taRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    if (editing && editRef.current) {
-      editRef.current.innerText = block.content
-      const range = document.createRange()
-      const sel = window.getSelection()
-      range.selectNodeContents(editRef.current)
-      range.collapse(false)
-      sel?.removeAllRanges()
-      sel?.addRange(range)
-      editRef.current.focus()
+    if (editing && taRef.current) {
+      const ta = taRef.current
+      ta.focus()
+      ta.setSelectionRange(ta.value.length, ta.value.length)
+      autoResize(ta)
     }
-    // 仅在进入编辑态时同步一次内容；输入过程由 onInput 单向向上传递
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editing])
 
   if (editing) {
     return (
-      <div
-        ref={editRef}
-        contentEditable
-        suppressContentEditableWarning
-        className="min-h-6 w-full cursor-text whitespace-pre-wrap break-words px-3 py-1 text-[13px] leading-6 text-zinc-800 outline-none dark:text-zinc-200"
-        onInput={(e) => onChange(e.currentTarget.innerText ?? '')}
-        onBlur={() => {
-          const cleaned = (editRef.current?.innerText ?? block.content).replace(/\s+$/, '')
-          onChange(cleaned)
-          setEditing(false)
+      <textarea
+        ref={taRef}
+        value={block.content}
+        onChange={(e) => {
+          onChange(e.target.value)
+          autoResize(e.target)
         }}
+        onBlur={() => setEditing(false)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
             onEnterNewBlock?.()
-          } else if (e.key === 'Enter' && e.shiftKey) {
-            e.preventDefault()
-            document.execCommand('insertLineBreak')
           }
         }}
+        className="w-full resize-none overflow-hidden border-0 bg-transparent px-3 py-1 text-[13px] leading-6 text-zinc-800 outline-none dark:text-zinc-200"
+        style={{ minHeight: 28 }}
       />
     )
   }

@@ -32,6 +32,7 @@ export function TreePanel({
   const [input, setInput] = useState('')
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
 
   const folders = nodes.filter((n): n is FolderNode => n.kind === 'folder')
   const exps = nodes.filter((n) => n.kind === 'exp')
@@ -110,37 +111,58 @@ export function TreePanel({
     return targets
   }
 
+  const toggleFolder = (id: string): void => {
+    const next = new Set(collapsed)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setCollapsed(next)
+  }
+
   const renderChildren = (parentId: string | null, depth: number): React.JSX.Element[] => {
     const items: React.JSX.Element[] = []
     for (const f of folders.filter((x) => x.parentId === parentId)) {
       const isCollapsed = collapsed.has(f.id)
       items.push(
         <div key={f.id}>
-          <div className="group flex items-center gap-0.5 rounded-md px-2 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-800/60" style={{ paddingLeft: 8 + depth * 14 }}>
-            <button
-              type="button"
-              className="w-4 text-[10px] text-zinc-400"
-              onClick={() => {
-                const next = new Set(collapsed)
-                if (isCollapsed) next.delete(f.id)
-                else next.add(f.id)
-                setCollapsed(next)
-              }}
-            >
-              {isCollapsed ? '▸' : '▾'}
-            </button>
+          <div
+            className={`group flex cursor-pointer items-center gap-0.5 rounded-md px-2 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 ${
+              dragOverId === f.id ? 'bg-blue-100 ring-1 ring-blue-400 dark:bg-blue-950/50' : ''
+            }`}
+            style={{ paddingLeft: 8 + depth * 14 }}
+            onClick={() => toggleFolder(f.id)}
+            onDragOver={(e) => {
+              if (dragOverId !== f.id) {
+                e.preventDefault()
+                setDragOverId(f.id)
+              }
+            }}
+            onDragLeave={(e) => {
+              if (dragOverId === f.id && !e.currentTarget.contains(e.relatedTarget as Node)) {
+                setDragOverId(null)
+              }
+            }}
+            onDrop={(e) => {
+              e.preventDefault()
+              setDragOverId(null)
+              const dragged = e.dataTransfer.getData('text/plain')
+              if (dragged && dragged !== f.id) {
+                void run(async () => repo.moveNode(dragged, f.id))
+              }
+            }}
+          >
+            <span className="w-4 text-[10px] text-zinc-400">{isCollapsed ? '▸' : '▾'}</span>
             <span className="min-w-0 flex-1 truncate text-[12.5px] text-zinc-700 dark:text-zinc-300">📁 {f.name || '?'}</span>
             <span className="hidden gap-0.5 group-hover:flex">
-              <button type="button" className={iconBtn} title={t('tree.newSubfolder')} onClick={() => openDialog({ type: 'createFolder', parentId: f.id })}>
+              <button type="button" className={iconBtn} title={t('tree.newSubfolder')} onClick={(ev) => { ev.stopPropagation(); openDialog({ type: 'createFolder', parentId: f.id }) }}>
                 ＋
               </button>
-              <button type="button" className={iconBtn} title={t('tree.rename')} onClick={() => openDialog({ type: 'rename', id: f.id, name: f.name }, f.name)}>
+              <button type="button" className={iconBtn} title={t('tree.rename')} onClick={(ev) => { ev.stopPropagation(); openDialog({ type: 'rename', id: f.id, name: f.name }, f.name) }}>
                 ✎
               </button>
-              <button type="button" className={iconBtn} title={t('tree.move')} onClick={() => openDialog({ type: 'move', id: f.id, name: f.name })}>
+              <button type="button" className={iconBtn} title={t('tree.move')} onClick={(ev) => { ev.stopPropagation(); openDialog({ type: 'move', id: f.id, name: f.name }) }}>
                 ⤴
               </button>
-              <button type="button" className={iconBtn} title={t('tree.delete')} onClick={() => void onDeleteFolder(f)}>
+              <button type="button" className={iconBtn} title={t('tree.delete')} onClick={(ev) => { ev.stopPropagation(); void onDeleteFolder(f) }}>
                 🗑
               </button>
             </span>
@@ -154,11 +176,17 @@ export function TreePanel({
       items.push(
         <div
           key={e.id}
+          draggable
           className={`group flex cursor-pointer items-center gap-0.5 rounded-md px-2 py-1 ${
             selectedId === e.id ? 'bg-blue-50 dark:bg-blue-950/50' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
           }`}
           style={{ paddingLeft: 8 + depth * 14 }}
           onClick={() => onSelect(e.id)}
+          onDragStart={(ev) => {
+            ev.dataTransfer.setData('text/plain', e.id)
+            ev.dataTransfer.effectAllowed = 'move'
+          }}
+          onDrop={(e) => e.stopPropagation()}
         >
           <span className="w-4" />
           <span className="min-w-0 flex-1 truncate text-[12.5px] text-zinc-700 dark:text-zinc-300">🧪 {name}</span>
@@ -188,7 +216,22 @@ export function TreePanel({
           </button>
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto py-1.5">
+      <div
+        className="min-h-0 flex-1 overflow-y-auto py-1.5"
+        onDragOver={(e) => {
+          // 树空白区域 = 移动到根目录
+          if (dragOverId === null && e.dataTransfer.types.includes('text/plain')) {
+            e.preventDefault()
+          }
+        }}
+        onDrop={(e) => {
+          const dragged = e.dataTransfer.getData('text/plain')
+          if (dragged && dragOverId === null) {
+            e.preventDefault()
+            void run(async () => repo.moveNode(dragged, null))
+          }
+        }}
+      >
         {folders.length === 0 && exps.length === 0 ? (
           <p className="px-3 py-6 text-center text-[12px] text-zinc-400 dark:text-zinc-500">{t('doc.emptyDesc')}</p>
         ) : (
