@@ -59,23 +59,50 @@ export function DocView({
     return blocks.length
   }
 
-  // 点击空白处：在对应位置插入文本块并直接进入编辑。
-  // 仅当点击位置真正远离任何块（> MARGIN）时才插入，避免点到块附近误建新行。
+  // 点击空白处：光标落到最近块的末尾继续输入。
+  // - 最近的块是文本块 → 进入其编辑态且光标置末尾
+  // - 最近的块是表格/图片 → 在其后新建文本块并聚焦
+  // - 空文档 → 从开头新建文本块并聚焦
+  // 点击位置距某块 12px 以内视为点击该块本身（由其自身处理），忽略。
   const onDocClick = (e: React.MouseEvent): void => {
     const target = e.target as HTMLElement
     if (target.closest('[data-block]')) return
     const MARGIN = 12
-    for (const el of blockRefs.current) {
-      if (!el) continue
+    let nearestIdx = -1
+    let nearestDist = Infinity
+    blockRefs.current.forEach((el, i) => {
+      if (!el) return
       const rect = el.getBoundingClientRect()
-      if (e.clientY >= rect.top - MARGIN && e.clientY <= rect.bottom + MARGIN) return
+      if (e.clientY >= rect.top - MARGIN && e.clientY <= rect.bottom + MARGIN) {
+        nearestIdx = i
+        nearestDist = -1
+        return
+      }
+      const dist = Math.abs(e.clientY - (rect.top + rect.height / 2))
+      if (dist < nearestDist) {
+        nearestDist = dist
+        nearestIdx = i
+      }
+    })
+    if (nearestDist === -1) return
+
+    if (nearestIdx === -1) {
+      // 空文档：从开头开始
+      const block = createTextBlock()
+      onChange([...blocks, block])
+      setAutoEditId(block.id)
+      return
     }
-    const index = indexAt(e.clientY)
-    const block = createTextBlock()
-    const next = [...blocks]
-    next.splice(index, 0, block)
-    onChange(next)
-    setAutoEditId(block.id)
+    const nearest = blocks[nearestIdx]
+    if (nearest.kind === 'text') {
+      setFocusEndId(nearest.id)
+    } else {
+      const block = createTextBlock()
+      const next = [...blocks]
+      next.splice(nearestIdx + 1, 0, block)
+      onChange(next)
+      setAutoEditId(block.id)
+    }
   }
 
   const onDrop = (e: React.DragEvent): void => {

@@ -30,7 +30,7 @@ const zh = {
   doc: {
     emptyTitle: '未选择实验',
     emptyDesc: '从左侧选择实验文件，或点「新建实验」开始记录。',
-    dropHint: '将 CSV / Excel / 图片拖入此处，自动渲染为表格块 / 图片块；点击空白处直接开始输入',
+    dropHint: '将 CSV / Excel / 图片拖入此处，自动渲染为表格块 / 图片块；点击空白处光标落到最近块的末尾继续输入',
     tableUntitled: '未命名表格',
     addRow: '添加行',
     delRow: '删行',
@@ -65,6 +65,9 @@ const zh = {
   },
   save: {
     save: '保存',
+    zoomIn: '放大',
+    zoomOut: '缩小',
+    zoomReset: '点击复位 100%',
     saved: '已保存',
     unsaved: '未保存',
     failed: '保存失败',

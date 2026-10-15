@@ -32,7 +32,7 @@ const en: Dict = {
   doc: {
     emptyTitle: 'No experiment selected',
     emptyDesc: 'Pick an experiment file on the left, or click "New experiment" to start.',
-    dropHint: 'Drop CSV / Excel / images here to render table / image blocks; click empty space to start typing',
+    dropHint: 'Drop CSV / Excel / images here to render table / image blocks; clicking empty space moves the cursor to the end of the nearest block',
     tableUntitled: 'Untitled table',
     addRow: 'Add row',
     delRow: 'Del row',
@@ -67,6 +67,9 @@ const en: Dict = {
   },
   save: {
     save: 'Save',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    zoomReset: 'Click to reset 100%',
     saved: 'Saved',
     unsaved: 'Unsaved',
     failed: 'Save failed',

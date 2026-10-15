@@ -103,6 +103,24 @@ export function WorkspacePage({ repo }: { repo: ExpRepo }): React.JSX.Element {
     return () => window.removeEventListener('keydown', onKey)
   })
 
+  // 缩放：Ctrl+滚轮（±10%，范围 50%–200%）
+  const [zoom, setZoom] = useState(1)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const onWheel = (e: WheelEvent): void => {
+      if (!e.ctrlKey) return
+      e.preventDefault()
+      setZoom((z) => Math.min(2, Math.max(0.5, z + (e.deltaY < 0 ? 0.1 : -0.1))))
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [doc?.id])
+
+  const clampZoom = (z: number): number => Math.min(2, Math.max(0.5, z))
+
   return (
     <div className="flex min-h-0 flex-1">
       <TreePanel
@@ -116,8 +134,10 @@ export function WorkspacePage({ repo }: { repo: ExpRepo }): React.JSX.Element {
       <main className="relative flex min-w-0 flex-1 flex-col">
         {doc ? (
           <>
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              <DocView blocks={doc.blocks} onChange={updateBlocks} />
+            <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+              <div style={{ zoom } as React.CSSProperties}>
+                <DocView blocks={doc.blocks} onChange={updateBlocks} />
+              </div>
             </div>
             <MetaPanel
               meta={doc.meta}
@@ -130,6 +150,33 @@ export function WorkspacePage({ repo }: { repo: ExpRepo }): React.JSX.Element {
               {flash && <span className="text-[12px] text-zinc-400 dark:text-zinc-500">{flash}</span>}
               <button type="button" className={btnPrimary} disabled={saving || !dirty} onClick={() => void onSave()}>
                 {saving ? '…' : t('save.save')}
+              </button>
+            </div>
+            {/* 缩放指示器（固定右下角） */}
+            <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1 rounded-lg border border-zinc-200 bg-white/95 px-1.5 py-1 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95">
+              <button
+                type="button"
+                className="w-6 rounded text-[13px] text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                title={t('save.zoomOut')}
+                onClick={() => setZoom((z) => clampZoom(z - 0.1))}
+              >
+                −
+              </button>
+              <button
+                type="button"
+                className="w-12 text-center text-[11.5px] font-medium text-zinc-600 dark:text-zinc-300"
+                title={t('save.zoomReset')}
+                onClick={() => setZoom(1)}
+              >
+                {Math.round(zoom * 100)}%
+              </button>
+              <button
+                type="button"
+                className="w-6 rounded text-[13px] text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                title={t('save.zoomIn')}
+                onClick={() => setZoom((z) => clampZoom(z + 0.1))}
+              >
+                ＋
               </button>
             </div>
           </>
