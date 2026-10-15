@@ -223,16 +223,17 @@ export function DocView({
         if (e.currentTarget === e.target) setDragging(false)
       }}
       onDrop={onDrop}
+      onClick={onDocClick}
     >
       {blocks.length === 0 ? (
-        <div className="mx-auto w-full max-w-[1400px]" onClick={onDocClick}>
+        <div className="mx-auto w-full max-w-[1400px]">
           <div className="pointer-events-none flex min-h-64 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 py-16 text-center dark:border-zinc-800">
             <div className="text-2xl">📄</div>
             <p className="text-[12.5px] text-zinc-400 dark:text-zinc-500">{t('doc.dropHint')}</p>
           </div>
         </div>
       ) : (
-        <div className="mx-auto w-full max-w-[1400px]" onClick={onDocClick}>
+        <div className="mx-auto w-full max-w-[1400px]">
           {blocks.map((block, i) => {
             const selected = block.id === selectedId
             return (
