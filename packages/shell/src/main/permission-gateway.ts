@@ -11,6 +11,7 @@ const CHANNEL_PERMISSION: Record<string, Permission> = {
   [SDK_CHANNELS.uiNotify]: 'ui',
   [SDK_CHANNELS.uiMinimize]: 'ui',
   [SDK_CHANNELS.uiClose]: 'ui',
+  [SDK_CHANNELS.uiSaveTextFile]: 'ui',
   [SDK_CHANNELS.sharedDataGet]: 'sharedData',
   [SDK_CHANNELS.sharedDataPut]: 'sharedData',
   [SDK_CHANNELS.sharedDataList]: 'sharedData',
@@ -52,14 +53,14 @@ function checkPermission(event: IpcMainInvokeEvent, channel: string): string | n
 
 export function registerSdkHandler(
   channel: string,
-  handler: (event: IpcMainInvokeEvent, payload: unknown, appId: string) => unknown
+  handler: (event: IpcMainInvokeEvent, payload: unknown, appId: string) => unknown | Promise<unknown>
 ): void {
-  ipcMain.handle(channel, (event, payload) => {
+  ipcMain.handle(channel, async (event, payload) => {
     const denial = checkPermission(event, channel)
     if (denial) return { ok: false, error: denial }
     const appId = appIdOfSender(event) as string
     try {
-      return handler(event, payload, appId)
+      return await handler(event, payload, appId)
     } catch (err) {
       return { ok: false, error: err instanceof Error ? err.message : String(err) }
     }

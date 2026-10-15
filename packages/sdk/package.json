@@ -1,6 +1,6 @@
 {
   "name": "@scitool/sdk",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "SciTool App SDK - 应用与平台之间的契约（类型、IPC 通道、API 定义）",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

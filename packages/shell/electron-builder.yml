@@ -11,8 +11,14 @@ files:
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!resources/default-apps/*'
 asarUnpack:
   - resources/**
+extraResources:
+  - from: resources/default-apps
+    to: default-apps
+    filter:
+      - '*.zip'
 win:
   executableName: SciTool
   target:

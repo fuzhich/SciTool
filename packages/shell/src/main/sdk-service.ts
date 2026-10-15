@@ -1,4 +1,5 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, dialog } from 'electron'
+import { writeFileSync } from 'fs'
 import { SDK_CHANNELS, type LogPayload, type NotificationOptions } from '@scitool/sdk'
 import { getDb } from './db'
 import { registerSdkHandler } from './permission-gateway'
@@ -63,6 +64,21 @@ export function registerSdkServices(): void {
   registerSdkHandler(SDK_CHANNELS.uiClose, (event) => {
     BrowserWindow.fromWebContents(event.sender)?.close()
     return { ok: true }
+  })
+
+  registerSdkHandler(SDK_CHANNELS.uiSaveTextFile, async (event, payload) => {
+    const { defaultFileName, content } = payload as { defaultFileName?: string; content: string }
+    if (typeof content !== 'string') throw new Error('content 非法')
+    const win = BrowserWindow.fromWebContents(event.sender)
+    const options = {
+      title: '导出文件',
+      defaultPath: defaultFileName ?? 'export.md',
+      filters: [{ name: 'Markdown', extensions: ['md'] }]
+    }
+    const result = win ? await dialog.showSaveDialog(win, options) : await dialog.showSaveDialog(options)
+    if (result.canceled || !result.filePath) return { ok: true, data: null }
+    writeFileSync(result.filePath, content, 'utf-8')
+    return { ok: true, data: { path: result.filePath } }
   })
 
   // === M2: 共享数据 + 事件总线 ===

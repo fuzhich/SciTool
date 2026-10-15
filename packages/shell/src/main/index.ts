@@ -6,6 +6,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { ensureAppsDir, installApp, launchApp, uninstallApp } from './app-manager'
+import { seedDefaultApps } from './default-apps'
 import { appDir } from './paths'
 import { registerSdkServices } from './sdk-service'
 import { registerShellServices, setShellWindow } from './shell-service'
@@ -87,6 +88,7 @@ app.whenReady().then(() => {
   if (smokeZip) {
     void (async () => {
       try {
+        await seedDefaultApps()
         const record = await installApp(smokeZip)
         writeLog('smoke', 'info', `installed: ${record.id}@${record.version}`)
         const win = await launchApp(record.id)
@@ -205,6 +207,8 @@ app.whenReady().then(() => {
         app.exit(1)
       }
     })()
+  } else {
+    void seedDefaultApps()
   }
 })
 
