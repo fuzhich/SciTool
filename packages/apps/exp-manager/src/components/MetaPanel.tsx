@@ -45,10 +45,10 @@ export function MetaPanel({
       }
     }
     if (parent) {
-      // 默认右下角（面板约 420px 高，留出底部边距）
+      // 默认右侧中部（抽屉拉出位，面板约 420px 高）
       setPos({
         x: Math.max(8, parent.clientWidth - 320 - 16),
-        y: Math.max(8, parent.clientHeight - 420 - 16)
+        y: Math.max(8, Math.round((parent.clientHeight - 420) / 2))
       })
     }
   }, [])
@@ -102,19 +102,22 @@ export function MetaPanel({
   const style = { left: pos.x, top: pos.y }
 
   if (collapsed) {
+    // 抽屉把手：竖式贴在右边缘，垂直居中（拉出来/收回去的观感）
     return (
-      <div ref={panelRef} className="absolute z-20" style={style}>
+      <div ref={panelRef} className="absolute right-0 top-1/2 z-20 -translate-y-1/2">
         <button
           type="button"
-          className="flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/95 px-3 py-2 text-[12.5px] font-medium text-zinc-700 shadow-md backdrop-blur hover:bg-white dark:border-zinc-600 dark:bg-zinc-800/95 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="flex flex-col items-center gap-1.5 rounded-l-lg border border-r-0 border-zinc-300 bg-white/95 px-2 py-3 shadow-md backdrop-blur transition-colors hover:bg-white dark:border-zinc-600 dark:bg-zinc-800/95 dark:hover:bg-zinc-800"
           title={t('panel.expand')}
           onClick={() => setCollapsed(false)}
         >
           <span className="flex h-4 w-4 items-center justify-center rounded bg-blue-600 text-[10px] font-bold text-white">
             i
           </span>
-          {t('panel.expand')}
-          <span className="text-[10px] text-zinc-400">▸</span>
+          <span className="text-[12px] font-medium text-zinc-700 dark:text-zinc-200" style={{ writingMode: 'vertical-rl' }}>
+            {t('panel.expand')}
+          </span>
+          <span className="text-[10px] text-zinc-400">◂</span>
         </button>
       </div>
     )
