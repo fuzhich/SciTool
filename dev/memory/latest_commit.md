@@ -3,7 +3,9 @@
 | 字段 | 内容 |
 |------|------|
 | 时间 | 2026-10-15 |
-| Hash | f3065ba（重构）/ c7388e3（SDK 0.4.0） |
-| 提交信息 | feat: 实验管理重构——expdoc v2 块式渲染文档 + 全屏工作区（D21） |
-| 变更内容 | expdoc v2 块模型（meta + text/table/image 有序块，v1→v2 自动迁移）、全屏两栏工作区（嵌套文件夹树/按位置拖拽插入块/可折叠悬浮面板）、启动 maximize（SDK 0.4.0）、自研 CSV 状态机解析器；旧表单式编辑页删除 |
-| 涉及文件 | packages/apps/exp-manager/*、packages/sdk/*、packages/shell/src/{main,renderer}/* |
+| Hash | d941272（M5a）/ abb95ed（文档） |
+| 提交信息 | feat: 论文管理 M5a——PDF 导入 + 三通道元数据提取 + AI 开关（D23） |
+| 变更内容 | 论文管理应用首版：paperdoc 引擎、papers 域仓库、PDF 导入（fileStore）、三通道元数据提取链（pdfjs/Crossref/AI）、AI 开关与降级路径 |
+| 涉及文件 | packages/apps/papers/* |
+
+> v0.2.0 已发布（GitHub Release：安装器 + 更新源 + 三应用 zip 资产）。

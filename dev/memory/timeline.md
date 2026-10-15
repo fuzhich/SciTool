@@ -31,3 +31,4 @@
 | 2026-10-15 | 平台 AI 服务（D22）：设置页 AI 配置（DeepSeek/OpenAI/自定义预设 + Key safeStorage 加密 + 保存即验证）；SDK 0.5.0 sdk.ai（新 ai 权限，平台代理转发，Key 不下发应用） | 决策 D22、ai-config.ts、ai-service.ts | 完成 |
 | 2026-10-15 | 平台 SDK 0.6.0（D23 前置）：fileStore 应用私有二进制存储（≤50MB/文件）、net 主进程网络代理（无 CORS/走系统代理）、ui.pickFile 文件选择；权限扩展至 9 种；DevGuide 任务书同步 | 决策 D23、file-store.ts、net-service.ts | 完成 |
 | 2026-10-15 | 论文管理 M5a（D23）：PDF 导入（pickFile/拖拽 → fileStore）+ 三通道元数据提取（pdfjs 内嵌元数据/DOI→Crossref 校准无 AI 可用，AI 首页文本提取增强）+ AI 开关与降级路径 + 元数据可编辑面板；冒烟全绿 | packages/apps/papers | 完成 |
+| 2026-10-15 | **v0.2.0 发布**：安装器 SciTool-0.2.0-setup.exe + 更新源上线 GitHub Release（含 dev-guide/exp-manager/papers 三个应用 zip 资产）；按 release_checklist 处理双草稿（删残缺草稿+补 blockmap+转正式） | — | 完成 |
