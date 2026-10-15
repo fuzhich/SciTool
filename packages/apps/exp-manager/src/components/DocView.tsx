@@ -49,10 +49,17 @@ export function DocView({
     return blocks.length
   }
 
-  // 点击空白处：在对应位置插入文本块并直接进入编辑
+  // 点击空白处：在对应位置插入文本块并直接进入编辑。
+  // 仅当点击位置真正远离任何块（> MARGIN）时才插入，避免点到块附近误建新行。
   const onDocClick = (e: React.MouseEvent): void => {
     const target = e.target as HTMLElement
     if (target.closest('[data-block]')) return
+    const MARGIN = 12
+    for (const el of blockRefs.current) {
+      if (!el) continue
+      const rect = el.getBoundingClientRect()
+      if (e.clientY >= rect.top - MARGIN && e.clientY <= rect.bottom + MARGIN) return
+    }
     const index = indexAt(e.clientY)
     const block = createTextBlock()
     const next = [...blocks]
@@ -134,15 +141,16 @@ export function DocView({
         if (e.currentTarget === e.target) setDragging(false)
       }}
       onDrop={onDrop}
-      onClick={onDocClick}
     >
       {blocks.length === 0 ? (
-        <div className="pointer-events-none flex min-h-64 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 py-16 text-center dark:border-zinc-800">
-          <div className="text-2xl">📄</div>
-          <p className="text-[12.5px] text-zinc-400 dark:text-zinc-500">{t('doc.dropHint')}</p>
+        <div className="mx-auto w-full max-w-[1400px]" onClick={onDocClick}>
+          <div className="pointer-events-none flex min-h-64 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 py-16 text-center dark:border-zinc-800">
+            <div className="text-2xl">📄</div>
+            <p className="text-[12.5px] text-zinc-400 dark:text-zinc-500">{t('doc.dropHint')}</p>
+          </div>
         </div>
       ) : (
-        <div className="mx-auto w-full max-w-[1400px] space-y-2">
+        <div className="mx-auto w-full max-w-[1400px] space-y-2" onClick={onDocClick}>
           {blocks.map((block, i) => (
             <div
               key={block.id}

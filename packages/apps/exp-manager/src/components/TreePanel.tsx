@@ -131,10 +131,9 @@ export function TreePanel({
             style={{ paddingLeft: 8 + depth * 14 }}
             onClick={() => toggleFolder(f.id)}
             onDragOver={(e) => {
-              if (dragOverId !== f.id) {
-                e.preventDefault()
-                setDragOverId(f.id)
-              }
+              // 必须每次事件都 preventDefault，浏览器才允许在本行 drop
+              e.preventDefault()
+              if (dragOverId !== f.id) setDragOverId(f.id)
             }}
             onDragLeave={(e) => {
               if (dragOverId === f.id && !e.currentTarget.contains(e.relatedTarget as Node)) {
@@ -219,8 +218,8 @@ export function TreePanel({
       <div
         className="min-h-0 flex-1 overflow-y-auto py-1.5"
         onDragOver={(e) => {
-          // 树空白区域 = 移动到根目录
-          if (dragOverId === null && e.dataTransfer.types.includes('text/plain')) {
+          // 树空白区域 = 移动到根目录；持续 preventDefault 保证可 drop
+          if (e.dataTransfer.types.includes('text/plain')) {
             e.preventDefault()
           }
         }}
