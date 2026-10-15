@@ -1,7 +1,7 @@
-// expdoc 文档格式 v1 —— 应用与外部（导出/AI）之间的契约。
-// 格式变更走版本号升级 + migrate 钩子，不得直接破坏性修改。
+// expdoc 文档格式 v2 —— 块式渲染文档。
+// 应用与外部（导出/AI）之间的契约；格式变更走版本号升级 + migrate 钩子。
 export const EXPDOC_FORMAT = 'scitool-expdoc'
-export const EXPDOC_VERSION = 1
+export const EXPDOC_VERSION = 2
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024
 
 export interface ExpSetting {
@@ -17,30 +17,54 @@ export interface ExpColumn {
   unit: string
 }
 
-export interface ExpTable {
+// 元数据（悬浮面板内容）
+export interface ExpMeta {
+  title: string
+  type: string
+  settings: ExpSetting[]
+  notes: string
+}
+
+export interface TextBlock {
   id: string
+  kind: 'text'
+  content: string
+}
+
+export interface TableBlock {
+  id: string
+  kind: 'table'
   name: string
   columns: ExpColumn[]
   rows: Record<string, string>[]
 }
 
-export interface ExpImage {
+export interface ImageBlock {
   id: string
+  kind: 'image'
   name: string
   caption: string
   mimeType: string
   dataBase64: string
 }
 
-export interface ExpBlock {
-  id: string
-  title: string
-  content: string
-}
+export type ExpBlock = TextBlock | TableBlock | ImageBlock
 
 export interface ExpDoc {
   format: string
   version: number
+  id: string
+  folderId: string | null
+  createdAt: string
+  updatedAt: string
+  meta: ExpMeta
+  blocks: ExpBlock[]
+}
+
+// v1 结构（迁移用）
+export interface ExpDocV1 {
+  format: string
+  version: 1
   id: string
   type: string
   title: string
@@ -48,8 +72,8 @@ export interface ExpDoc {
   createdAt: string
   updatedAt: string
   settings: ExpSetting[]
-  tables: ExpTable[]
-  images: ExpImage[]
-  results: ExpBlock[]
+  tables: { id: string; name: string; columns: ExpColumn[]; rows: Record<string, string>[] }[]
+  images: { id: string; name: string; caption: string; mimeType: string; dataBase64: string }[]
+  results: { id: string; title: string; content: string }[]
   notes: string
 }

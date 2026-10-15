@@ -1,5 +1,5 @@
 import type { Sdk, SharedDoc } from '@scitool/sdk'
-import { EXPDOC_FORMAT, normalizeDoc, type ExpDoc } from '../expdoc'
+import { EXPDOC_FORMAT, migrateDoc, type ExpDoc } from '../expdoc'
 
 export const EXPS_DOMAIN = 'exps'
 
@@ -77,12 +77,12 @@ export class ExpRepo {
       }
     }
     if (data.format === EXPDOC_FORMAT) {
-      const doc = normalizeDoc(data)
+      const doc = migrateDoc(data)
       return {
         kind: 'exp',
         id: d.id,
-        title: doc.title,
-        type: doc.type,
+        title: doc.meta.title,
+        type: doc.meta.type,
         folderId: doc.folderId ?? null,
         updatedAt: doc.updatedAt,
         revision: d.revision
@@ -99,7 +99,7 @@ export class ExpRepo {
     const res = await this.sdk.sharedData.get(id)
     if (!res.ok) throw new Error(res.error)
     if (!res.data) throw new Error('文档不存在')
-    const doc = normalizeDoc(res.data.data)
+    const doc = migrateDoc(res.data.data)
     return { doc, revision: res.data.revision }
   }
 

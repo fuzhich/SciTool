@@ -14,37 +14,39 @@ export function validateDoc(raw: unknown): string | null {
   if (raw.format !== EXPDOC_FORMAT) return `format 应为 ${EXPDOC_FORMAT}`
   if (raw.version !== EXPDOC_VERSION) return `不支持的文档版本: ${String(raw.version)}`
   if (typeof raw.id !== 'string' || !raw.id) return 'id 缺失'
-  if (typeof raw.title !== 'string') return 'title 缺失'
-  if (typeof raw.type !== 'string') return 'type 缺失'
   if (raw.folderId !== null && typeof raw.folderId !== 'string') return 'folderId 非法'
   if (typeof raw.createdAt !== 'string' || typeof raw.updatedAt !== 'string') return '时间戳缺失'
 
-  if (!Array.isArray(raw.settings) || !Array.isArray(raw.tables) || !Array.isArray(raw.images) || !Array.isArray(raw.results)) {
-    return 'settings/tables/images/results 需为数组'
-  }
-  for (const s of raw.settings) {
+  const meta = raw.meta
+  if (!isRecord(meta)) return 'meta 缺失'
+  if (typeof meta.title !== 'string' || typeof meta.type !== 'string') return 'meta.title/type 缺失'
+  if (typeof meta.notes !== 'string') return 'meta.notes 缺失'
+  if (!Array.isArray(meta.settings)) return 'meta.settings 需为数组'
+  for (const s of meta.settings) {
     if (!isRecord(s) || !isStrArray([s.id, s.name, s.value, s.unit])) return 'settings 项结构非法'
   }
-  for (const t of raw.tables) {
-    if (!isRecord(t) || typeof t.id !== 'string' || typeof t.name !== 'string' || !Array.isArray(t.columns) || !Array.isArray(t.rows)) {
-      return 'tables 项结构非法'
-    }
-    for (const c of t.columns) {
-      if (!isRecord(c) || !isStrArray([c.id, c.name, c.unit])) return '表格列结构非法'
-    }
-    for (const r of t.rows) {
-      if (!isRecord(r)) return '表格行结构非法'
+
+  if (!Array.isArray(raw.blocks)) return 'blocks 需为数组'
+  for (const b of raw.blocks) {
+    if (!isRecord(b)) return 'block 结构非法'
+    if (b.kind === 'text') {
+      if (!isStrArray([b.id, b.content])) return 'text 块结构非法'
+    } else if (b.kind === 'table') {
+      if (typeof b.id !== 'string' || typeof b.name !== 'string' || !Array.isArray(b.columns) || !Array.isArray(b.rows)) {
+        return 'table 块结构非法'
+      }
+      for (const c of b.columns) {
+        if (!isRecord(c) || !isStrArray([c.id, c.name, c.unit])) return '表格列结构非法'
+      }
+      for (const r of b.rows) {
+        if (!isRecord(r)) return '表格行结构非法'
+      }
+    } else if (b.kind === 'image') {
+      if (!isStrArray([b.id, b.name, b.caption, b.mimeType, b.dataBase64])) return 'image 块结构非法'
+    } else {
+      return `未知块类型: ${String(b.kind)}`
     }
   }
-  for (const img of raw.images) {
-    if (!isRecord(img) || !isStrArray([img.id, img.name, img.caption, img.mimeType, img.dataBase64])) {
-      return 'images 项结构非法'
-    }
-  }
-  for (const b of raw.results) {
-    if (!isRecord(b) || !isStrArray([b.id, b.title, b.content])) return 'results 项结构非法'
-  }
-  if (typeof raw.notes !== 'string') return 'notes 缺失'
   return null
 }
 
