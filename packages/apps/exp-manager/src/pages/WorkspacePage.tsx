@@ -154,8 +154,8 @@ export function WorkspacePage({ repo }: { repo: ExpRepo }): React.JSX.Element {
                 {saving ? '…' : t('save.save')}
               </button>
             </div>
-            {/* 缩放指示器（固定右下角） */}
-            <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1 rounded-lg border border-zinc-200 bg-white/95 px-1.5 py-1 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95">
+            {/* 缩放指示器（底部居中，右下角留给实验信息面板） */}
+            <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-lg border border-zinc-200 bg-white/95 px-1.5 py-1 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95">
               <button
                 type="button"
                 className="w-6 rounded text-[13px] text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"

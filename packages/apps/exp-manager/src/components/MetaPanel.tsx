@@ -5,7 +5,7 @@ import { Field, inputCls } from './ui'
 import { MarkdownField } from './MarkdownField'
 import { SettingsEditor } from './SettingsEditor'
 
-const POS_KEY = 'scitool-metapanel-pos'
+const POS_KEY = 'scitool-metapanel-pos-v2'
 
 // 实验信息悬浮面板：默认顶部居中，可拖拽（拖到哪停在哪，位置持久化），可折叠。
 export function MetaPanel({
@@ -45,7 +45,11 @@ export function MetaPanel({
       }
     }
     if (parent) {
-      setPos({ x: Math.max(8, Math.round((parent.clientWidth - 320) / 2)), y: 16 })
+      // 默认右下角（面板约 420px 高，留出底部边距）
+      setPos({
+        x: Math.max(8, parent.clientWidth - 320 - 16),
+        y: Math.max(8, parent.clientHeight - 420 - 16)
+      })
     }
   }, [])
 
