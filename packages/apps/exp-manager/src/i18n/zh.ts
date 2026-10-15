@@ -43,6 +43,7 @@ const zh = {
     moveDown: '下移',
     deleteBlock: '删除块',
     exportCsv: '导出 CSV',
+    exportXlsx: '导出 XLSX',
     exportImage: '导出图片'
   },
   table: {

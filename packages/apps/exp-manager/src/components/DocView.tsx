@@ -17,7 +17,7 @@ export function DocView({
 }: {
   blocks: ExpBlock[]
   onChange: (next: ExpBlock[]) => void
-  onExportTable?: (sheet: TableSheet, tableNo: number, blockName: string, sheetIndex: number, sheetName: string) => void
+  onExportTable?: (sheet: TableSheet, tableNo: number, blockName: string, sheetIndex: number, sheetName: string, format: 'csv' | 'xlsx') => void
   onExportImage?: (img: ImageBlock, figureNo: number) => void
 }): React.JSX.Element {
   const { t } = useTranslation()
@@ -302,7 +302,10 @@ export function DocView({
                     tableNo={numbers[i].no}
                     onChange={(next) => patchBlock(i, next)}
                     onExportCsv={(sheet, sheetIndex) =>
-                      onExportTable?.(sheet, numbers[i].no, block.name, sheetIndex, sheet.name)
+                      onExportTable?.(sheet, numbers[i].no, block.name, sheetIndex, sheet.name, 'csv')
+                    }
+                    onExportXlsx={(sheet, sheetIndex) =>
+                      onExportTable?.(sheet, numbers[i].no, block.name, sheetIndex, sheet.name, 'xlsx')
                     }
                   />
                 )}

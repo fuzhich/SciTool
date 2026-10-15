@@ -1,4 +1,5 @@
 import JSZip from 'jszip'
+import * as XLSX from 'xlsx'
 import type { Sdk } from '@scitool/sdk'
 import type { ExpDoc, ImageBlock, TableSheet } from './expdoc'
 import { serializeDoc } from './expdoc'
@@ -37,6 +38,23 @@ export async function exportCsv(sdk: Sdk, sheet: TableSheet, baseName: string): 
   return res.ok ? (res.data ?? null) : null
 }
 
+function sheetToAoa(sheet: TableSheet): unknown[][] {
+  return [sheet.columns.map((c) => c.name), ...sheet.rows.map((r) => sheet.columns.map((c) => r[c.id] ?? ''))]
+}
+
+export async function exportXlsx(sdk: Sdk, sheet: TableSheet, baseName: string): Promise<{ path: string } | null> {
+  const wb = XLSX.utils.book_new()
+  const ws = XLSX.utils.aoa_to_sheet(sheetToAoa(sheet))
+  XLSX.utils.book_append_sheet(wb, ws, sheet.name || 'Sheet1')
+  const base64 = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' })
+  const res = await sdk.ui.saveFile({
+    defaultFileName: `${sanitize(baseName)}.xlsx`,
+    dataBase64: base64,
+    filters: [{ name: 'Excel', extensions: ['xlsx'] }]
+  })
+  return res.ok ? (res.data ?? null) : null
+}
+
 export async function exportImage(sdk: Sdk, img: ImageBlock, baseName: string): Promise<{ path: string } | null> {
   const ext = imageExt(img)
   const res = await sdk.ui.saveFile({
@@ -69,11 +87,17 @@ export async function exportDocZip(sdk: Sdk, doc: ExpDoc): Promise<{ path: strin
   for (const b of doc.blocks) {
     if (b.kind === 'table') {
       tableNo++
+      const wb = XLSX.utils.book_new()
+      b.sheets.forEach((sheet, i) => {
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheetToAoa(sheet)), (sheet.name || `Sheet${i + 1}`).slice(0, 31))
+      })
+      const xlsxName = `Table${tableNo}-${sanitize(b.name || `表${tableNo}`)}.xlsx`
+      tables.file(xlsxName, XLSX.write(wb, { type: 'base64', bookType: 'xlsx' }), { base64: true })
       b.sheets.forEach((sheet, i) => {
         const label = b.sheets.length > 1 ? `表${i + 1}（${sheet.name || '未命名'}）` : ''
         const name = `Table${tableNo}-${sanitize(sheet.name || `表${i + 1}`)}.csv`
         tables.file(name, sheetToCsv(sheet))
-        md.push(`- Table ${tableNo}${label ? ` ${label}` : ''}${b.name ? `（${b.name}）` : ''} → tables/${name}`)
+        md.push(`- Table ${tableNo}${label ? ` ${label}` : ''}${b.name ? `（${b.name}）` : ''} → tables/${name}（整表 Excel 见 ${xlsxName}）`)
       })
     } else if (b.kind === 'image') {
       figureNo++

@@ -4,7 +4,7 @@ import type { ExpBlock, ExpDoc, ExpMeta } from '../lib/expdoc'
 import type { Sdk } from '@scitool/sdk'
 import type { ExpRepo, RepoNode } from '../lib/repo/exp-repo'
 import { Badge, btnGhost, btnPrimary } from '../components/ui'
-import { exportCsv, exportDocZip, exportImage } from '../lib/export'
+import { exportCsv, exportDocZip, exportImage, exportXlsx } from '../lib/export'
 import { TreePanel } from '../components/TreePanel'
 import { DocView } from '../components/DocView'
 import { MetaPanel } from '../components/MetaPanel'
@@ -143,9 +143,10 @@ export function WorkspacePage({ sdk, repo }: { sdk: Sdk; repo: ExpRepo }): React
                 <DocView
               blocks={doc.blocks}
               onChange={updateBlocks}
-              onExportTable={(sheet, tableNo, blockName, sheetIndex, sheetName) => {
+              onExportTable={(sheet, tableNo, blockName, sheetIndex, sheetName, format) => {
                 const base = `Table${tableNo}-${sheetName || `表${sheetIndex + 1}`}`
-                void exportCsv(sdk, sheet, base).then((r) =>
+                const fn = format === 'xlsx' ? exportXlsx : exportCsv
+                void fn(sdk, sheet, base).then((r) =>
                   showFlash(r ? `${t('save.exported', { path: r.path })}` : t('save.exportCanceled'))
                 )
               }}

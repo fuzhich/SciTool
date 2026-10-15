@@ -45,6 +45,7 @@ const en: Dict = {
     moveDown: 'Move down',
     deleteBlock: 'Delete block',
     exportCsv: 'Export CSV',
+    exportXlsx: 'Export XLSX',
     exportImage: 'Export image'
   },
   table: {

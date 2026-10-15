@@ -14,12 +14,14 @@ export function TableBlockView({
   block,
   tableNo,
   onChange,
-  onExportCsv
+  onExportCsv,
+  onExportXlsx
 }: {
   block: TableBlock
   tableNo: number
   onChange: (next: TableBlock) => void
   onExportCsv?: (sheet: TableSheet, sheetIndex: number) => void
+  onExportXlsx?: (sheet: TableSheet, sheetIndex: number) => void
 }): React.JSX.Element {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
@@ -67,6 +69,9 @@ export function TableBlockView({
         <div className="flex shrink-0 gap-1">
           <button type="button" className={btnGhost} onClick={() => onExportCsv?.(sheet, sheetIndex)}>
             {t('doc.exportCsv')}
+          </button>
+          <button type="button" className={btnGhost} onClick={() => onExportXlsx?.(sheet, sheetIndex)}>
+            {t('doc.exportXlsx')}
           </button>
           {truncated && (
             <button type="button" className={btnGhost} onClick={() => setExpanded((v) => !v)}>
