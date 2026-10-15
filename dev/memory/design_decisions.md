@@ -179,3 +179,13 @@
   - 冒烟 harness 扩展：`SCITOOL_SMOKE_DOMAIN` 环境变量（默认 papers），使共享数据探针适配任意应用的域名授权
   - 视觉：沿用壳层 zinc 色系 + 蓝 accent + 深浅主题（.dark class），字体 Segoe UI/PingFang SC
 - **理由**：与平台同栈的参考实现最利于后续应用复制模式；manifest 即"全权限示例"；mock SDK 让应用可脱离平台在浏览器开发调试。
+
+### [D19] DevGuide 提示词导出 + 平台默认安装（2026-10-15）
+
+- **背景**：开发者要求：① DevGuide 增加「导出 AI 开发提示词」功能（markdown 任务书，作为后续应用开发的 AI 前置提示词），导出时可选保存路径；② DevGuide 设为平台默认安装应用（用户可卸载）。
+- **结论**：
+  - **SDK 0.3.0 新增 `sdk.ui.saveTextFile({ defaultFileName, content })`**（权限 `ui`）：主进程弹原生保存对话框（parent 为调用窗口），写 UTF-8 文件；用户取消返回 `{ ok: true, data: null }`；SDK 语义化版本 0.2.0 → 0.3.0（只增不改）。应用沙箱无 Node 能力，保存对话框必须由平台提供。
+  - **registerSdkHandler 改为 async**：`ipcMain.handle` 支持异步 handler，wrapper 用 `await` 以正确捕获异步 handler 的 rejection。
+  - **DevGuide 新增「AI 提示词」页**（第五导航项）：`src/lib/dev-prompt.ts` 生成中文 markdown 任务书（角色/平台背景/硬性接入约束含 manifest 正则/SDK API 全量/开发流程/代码规范/交付完成标准/避坑清单），页面预览 + 导出。应用侧特性检测：无 `saveTextFile` 时回退浏览器 Blob 下载（mock 模式同）；minSdkVersion 保持 0.2.0 —— 示范优雅降级。
+  - **默认安装 seed 机制**：打包时把 dev-guide.zip 经 extraResources 装入安装目录 `resources/default-apps/`（shell build:win 前先 `pnpm --filter @scitool/dev-guide package` 并拷贝 zip）；平台启动时 `seedDefaultApps()`：`platform_meta` 表无 `default_apps_seeded` 标记时安装该目录全部 zip 并写标记（**仅在目录存在时写标记**，失败/缺失不写以便重试）；用户卸载后不重装；dev 模式从 `packages/apps/dev-guide/dist/` 读取，缺失则跳过。冒烟模式下 seed 先行、再跑安装探针（避免同 id 并发安装）。
+- **理由**：平台内置应用走「内置包 + 一次性 seed」是 VS Code 类产品的成熟模式，meta 表已存在天然承载标记；saveTextFile 归属 `ui` 权限避免新增权限类型；DevGuide 保持 0.2.0 minSdkVersion + 特性检测，向后续应用示范「新能力可用但非必需」的兼容写法。

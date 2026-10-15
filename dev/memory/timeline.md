@@ -15,3 +15,4 @@
 | 2026-10-14 | M3 实施：平台自更新（electron-updater+设置页）、应用自更新（update.url 全链路）、暗色主题、设置页完善；冒烟验证更新链路 | 决策 D16、updater.ts、app-updater.ts | 完成 |
 | 2026-10-14 | v0.1.0 正式发布 GitHub Release（安装包+latest.yml 更新源上线），处理 electron-builder 双草稿坑 | 决策 D17 | 完成 |
 | 2026-10-15 | 第一个真实应用 DevGuide：React+TS+Vite 参考实现（概览/快速开始/SDK 六能力演练/manifest 清单，mock SDK 浏览器预览），工作区纳入 packages/apps/*，冒烟 harness 支持 SCITOOL_SMOKE_DOMAIN + 渲染探针，发版流程备忘落地 release_checklist.md | packages/apps/dev-guide、决策 D18 | 完成 |
+| 2026-10-15 | SDK 0.3.0（sdk.ui.saveTextFile 原生保存对话框）、DevGuide「AI 提示词」页（markdown 开发任务书导出，可选保存路径 + 浏览器下载回退）、平台默认安装 seed 机制（extraResources 内置 zip + 首启自动安装 + platform_meta 标记，卸载不重装）；冒烟验证 seed 生效与幂等 | 决策 D19、default-apps.ts | 完成 |

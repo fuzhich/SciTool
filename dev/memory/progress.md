@@ -37,6 +37,10 @@
   - 四章节：概览与架构 / 快速开始 / SDK 六能力交互演练 / manifest 接入清单；权限全量 + devguide 域（write）
   - 打包：vite build（base './'）→ zip 平铺；manifest 校验规则全过
   - 冒烟全绿：安装→启动→React 渲染→SDK 探针→域名授权→共享数据/乐观锁→事件→卸载（harness 新增 SCITOOL_SMOKE_DOMAIN + 渲染探针）
+- [x] **DevGuide 提示词导出 + 平台默认安装**（D19）：
+  - SDK 0.3.0 新增 `sdk.ui.saveTextFile({ defaultFileName, content })`：原生保存对话框写 UTF-8 文件，取消返回 data:null（ui 权限）；registerSdkHandler 改 async
+  - DevGuide 新增「AI 提示词」页：中文 markdown 开发任务书（角色/平台背景/manifest 校验规则/SDK API/开发流程/规范/交付标准/避坑清单），预览 + 导出可选路径；无对话框能力回退浏览器下载（minSdkVersion 保持 0.2.0 示范优雅降级）
+  - 默认安装：打包时 dev-guide.zip 经 extraResources 装入 `resources/default-apps/`（shell build:win 自动前置 package + 拷贝）；首启 seedDefaultApps 自动安装并写 platform_meta 标记，**卸载后不重装**；冒烟验证 seed 生效 + 幂等（二次运行 0 seed）
 
 ### 进行中
 
@@ -46,10 +50,16 @@
 
 **DevGuide 应用 UI 测试**（构建 zip：`pnpm --filter @scitool/dev-guide package`，或直接用已构建的 `packages/apps/dev-guide/dist/dev-guide.zip`）：
 
-- [ ] 应用中心安装 dev-guide.zip → 启动，四章节浏览正常（中英文）
+- [ ] 应用中心安装 dev-guide.zip → 启动，五个章节浏览正常（中英文）
 - [ ] SDK 演练逐项点击：存储/设置/日志/通知/共享数据（put 后 list 可见、expectedRevision 冲突报错）/事件（订阅后写测试文档收到 created/updated）
 - [ ] 语言跟随：平台切换语言后重启应用，界面语言切换；主题跟随暗色
+- [ ] 「AI 提示词」页导出 .md：保存对话框可选路径，导出的 markdown 内容完整
 - [ ] 浏览器 dev 模式抽查（mock SDK 横幅出现）：`pnpm --filter @scitool/dev-guide dev`
+
+**默认安装验证**（需重新打包安装器，见 release_checklist）：
+
+- [ ] 新安装器覆盖安装后首次启动，应用中心自动出现「开发指南」
+- [ ] 卸载「开发指南」后重启平台，不应自动重现
 
 **M3 遗留测试清单**：
 
@@ -72,3 +82,4 @@
 - 2026-10-14 会话四：打包分发 + 数据目录方案（D13、D14）
 - 2026-10-14 会话五：M2 数据共享 + M3 打磨 + v0.1.0 发布（D15–D17）
 - 2026-10-15 会话六：第一个真实应用 DevGuide + 发版流程备忘（D18）
+- 2026-10-15 会话七：DevGuide 提示词导出 + 平台默认安装（D19，SDK 0.3.0）
