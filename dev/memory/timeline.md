@@ -29,3 +29,4 @@
 | 2026-10-15 | 应用中心改版：极简磁贴（图标+名称）+ 单击右侧详情侧栏（版本/权限/安装时间/操作）+ 双击启动 | — | 完成 |
 | 2026-10-15 | 平台 AI 服务（D22）：设置页 AI 配置（DeepSeek/OpenAI/自定义预设 + Key safeStorage 加密 + 保存即验证）；SDK 0.5.0 sdk.ai（新 ai 权限，平台代理转发，Key 不下发应用） | 决策 D22、ai-config.ts、ai-service.ts | 完成 |
 | 2026-10-15 | 平台 AI 服务（D22）：设置页 AI 配置（DeepSeek/OpenAI/自定义预设 + Key safeStorage 加密 + 保存即验证）；SDK 0.5.0 sdk.ai（新 ai 权限，平台代理转发，Key 不下发应用） | 决策 D22、ai-config.ts、ai-service.ts | 完成 |
+| 2026-10-15 | 平台 SDK 0.6.0（D23 前置）：fileStore 应用私有二进制存储（≤50MB/文件）、net 主进程网络代理（无 CORS/走系统代理）、ui.pickFile 文件选择；权限扩展至 9 种；DevGuide 任务书同步 | 决策 D23、file-store.ts、net-service.ts | 完成 |

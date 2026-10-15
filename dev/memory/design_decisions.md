@@ -228,3 +228,18 @@
     - `available()` → 平台是否已配置可用 Key（返回布尔）
     - `chat(messages, { model?, temperature?, maxTokens? })` → 平台代理转发 OpenAI 兼容 `/chat/completions`（**net.fetch 走系统代理**），返回 `{ content, model, usage }`
   - **理由**：应用沙箱不能持 Key（防外泄），平台代理是唯一合理形态；net.fetch 遵循系统代理（Node fetch 不遵循，openai 域名必须走代理）；safeStorage 是 Windows 零成本原生加密。
+
+### [D23] 论文管理应用设计（2026-10-15）
+
+- **背景**：第三个应用「论文管理」：文件树管理论文 + PDF 导入自定义命名；开启 AI 后自动识别论文信息并结合网络信息构建元数据（作者/单位/时间/期刊）；单体知识库：团队近年发文、研究路径、引用网络溯源、复现线索（代码/数据集）。开发者确认按推荐方案执行。
+- **结论**：
+  - **AI 与学术 API 分工（核心原则）**：事实性数据（引用关系、作者论文、DOI 校准）必须来自学术 API（Semantic Scholar / Crossref，均免费）；AI 只做提取候选与总结解读，绝不生成引用关系（防幻觉）。
+  - **三通道元数据链**：PDF 首页文本 → AI 提取 {标题, DOI} 候选 → Crossref（按 DOI）/ S2（按标题）权威校准 → 人工可编辑兜底。
+  - **平台 SDK 0.6.0 三件套**（前置）：
+    - `sdk.fileStore.put/get/remove/list`（新权限 `fileStore`）：应用私有二进制文件存储（`data/app-files/<appId>/`，uuid 前缀文件名 + 防穿越，单文件上限 50MB）——PDF 不落 sharedData 文本库
+    - `sdk.net.get(url, headers?)`（新权限 `net`）：主进程 net.fetch 代理（无 CORS 限制、走系统代理），返回 {status, text}；仅 http(s)、30s 超时
+    - `sdk.ui.pickFile(filters?)`（ui 权限）：文件选择对话框，返回 {name, data}（主进程读文件）
+  - **文档模型**（沿用 expdoc 版本化 JSON 引擎模式）：`meta`（标题/作者/单位/年份/期刊/DOI 等）+ `pdfRef`（fileStore id）+ `citations`{refs/citedBy/fetchedAt} + `knowledge`{summary/trajectory/teamProfile/provenance/reproClues/generatedAt}——AI 结果落盘缓存，可重新生成。
+  - **分阶段**：M5a 树+PDF 导入+三通道元数据链+可编辑面板；M5b S2 引用网络+两级辐射图（自研 SVG）；M5c 知识库四件套（摘要/研究路径/团队画像/溯源复现）；M5d 打磨（按需全文解析、规模测试）。
+  - **技术要点**：PDF 解析用 pdfjs-dist（渲染进程）；元数据只依赖首页文本（双栏解析噪音规避）；S2 无 key 限额低，预留 key 配置位；图谱自研同心圆两级布局，不引物理引擎。
+- **理由**：AI 幻觉在学术数据上是致命的，事实源必须 API 化；PDF 二进制必须平台文件存储承载；net 代理补齐 CORS 与系统代理问题。
