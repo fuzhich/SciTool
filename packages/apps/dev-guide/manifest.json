@@ -1,0 +1,18 @@
+{
+  "id": "com.scitool.dev-guide",
+  "name": {
+    "zh": "开发指南",
+    "en": "DevGuide"
+  },
+  "version": "1.0.0",
+  "minSdkVersion": "0.2.0",
+  "description": {
+    "zh": "SciTool 应用开发指南：平台框架介绍、接入要求与 SDK 能力现场演练，可作为新应用的参考实现",
+    "en": "SciTool app development guide: platform framework, integration requirements and live SDK playground. A reference implementation for new apps"
+  },
+  "entry": "index.html",
+  "permissions": ["storage", "settings", "log", "ui", "sharedData", "events"],
+  "sharedDomains": [
+    { "domain": "devguide", "access": "write" }
+  ]
+}
