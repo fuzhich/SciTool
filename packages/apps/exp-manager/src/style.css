@@ -43,33 +43,47 @@ body,
   background-clip: content-box;
 }
 
+/* 正文排版（顶会风格）：衬线字体 14px / 1.7 行高，段落两端对齐 */
+.doc-serif {
+  font-family:
+    Georgia,
+    'Times New Roman',
+    'Noto Serif SC',
+    SimSun,
+    'Songti SC',
+    serif;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
 .markdown-body h1,
 .markdown-body h2,
 .markdown-body h3 {
   font-weight: 600;
-  margin: 0.6em 0 0.3em;
+  margin: 0.9em 0 0.4em;
 }
 
 .markdown-body h1 {
-  font-size: 1.15em;
+  font-size: 1.25em;
 }
 
 .markdown-body h2 {
-  font-size: 1.05em;
+  font-size: 1.1em;
 }
 
 .markdown-body h3 {
-  font-size: 0.95em;
+  font-size: 1em;
 }
 
 .markdown-body p {
-  margin: 0.35em 0;
+  margin: 0.3em 0;
+  text-align: justify;
 }
 
 .markdown-body ul,
 .markdown-body ol {
   padding-left: 1.4em;
-  margin: 0.35em 0;
+  margin: 0.3em 0;
 }
 
 .markdown-body ul {

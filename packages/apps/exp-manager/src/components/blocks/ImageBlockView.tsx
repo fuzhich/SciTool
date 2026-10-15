@@ -12,7 +12,7 @@ export function ImageBlockView({
   onChange: (next: ImageBlock) => void
 }): React.JSX.Element {
   return (
-    <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <div className="my-2.5 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
       <img
         src={`data:${block.mimeType};base64,${block.dataBase64}`}
         alt={block.caption}

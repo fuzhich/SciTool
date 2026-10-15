@@ -41,7 +41,7 @@ export function TableBlockView({
   const isNumeric = (v: string): boolean => NUMERIC.test(v.trim())
 
   return (
-    <div className="rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="my-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800">
       <div className="flex items-center justify-between gap-2 border-b border-zinc-200 px-3 py-2 dark:border-zinc-800">
         <div className="flex min-w-0 flex-1 items-baseline gap-1">
           <span className="shrink-0 text-[12.5px] font-semibold text-zinc-700 dark:text-zinc-200">

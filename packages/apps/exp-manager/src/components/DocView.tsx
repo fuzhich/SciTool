@@ -21,6 +21,7 @@ export function DocView({
   const [dragging, setDragging] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [autoEditId, setAutoEditId] = useState<string | null>(null)
+  const [focusEndId, setFocusEndId] = useState<string | null>(null)
 
   const patchBlock = (index: number, next: ExpBlock): void => {
     onChange(blocks.map((b, i) => (i === index ? next : b)))
@@ -35,6 +36,15 @@ export function DocView({
   }
   const removeBlock = (index: number): void => {
     onChange(blocks.filter((_, i) => i !== index))
+  }
+
+  // 空行退格：删除本块，光标回到上一个文本块末尾（否则聚焦下一个文本块）
+  const onBackspaceEmpty = (index: number): void => {
+    const prev = blocks[index - 1]
+    const next = blocks[index + 1]
+    onChange(blocks.filter((_, i) => i !== index))
+    if (prev?.kind === 'text') setFocusEndId(prev.id)
+    else if (next?.kind === 'text') setFocusEndId(next.id)
   }
 
   // 依据鼠标 Y 坐标计算插入位置（块中点比较）
@@ -150,7 +160,7 @@ export function DocView({
           </div>
         </div>
       ) : (
-        <div className="mx-auto w-full max-w-[1400px] space-y-2" onClick={onDocClick}>
+        <div className="mx-auto w-full max-w-[1400px]" onClick={onDocClick}>
           {blocks.map((block, i) => (
             <div
               key={block.id}
@@ -175,6 +185,7 @@ export function DocView({
                 <TextBlockView
                   block={block}
                   initialEditing={block.id === autoEditId}
+                  focusEndSignal={block.id === focusEndId}
                   onChange={(content) => patchBlock(i, { ...block, content })}
                   onEnterNewBlock={() => {
                     const nb = createTextBlock()
@@ -183,6 +194,8 @@ export function DocView({
                     onChange(next)
                     setAutoEditId(nb.id)
                   }}
+                  onBackspaceEmpty={() => onBackspaceEmpty(i)}
+                  onFocusEndDone={() => setFocusEndId(null)}
                 />
               )}
               {block.kind === 'table' && (
