@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ExpMeta } from '../lib/expdoc'
-import { btnGhost, Field, inputCls } from './ui'
+import { Field, inputCls } from './ui'
 import { MarkdownField } from './MarkdownField'
 import { SettingsEditor } from './SettingsEditor'
 
-// 左上角固定悬浮面板：元数据（标题/类型/实验设置/备注），可折叠。
+const POS_KEY = 'scitool-metapanel-pos'
+
+// 实验信息悬浮面板：默认顶部居中，可拖拽（拖到哪停在哪，位置持久化），可折叠。
 export function MetaPanel({
   meta,
   createdAt,
@@ -16,38 +18,115 @@ export function MetaPanel({
   createdAt: string
   updatedAt: string
   onChange: (patch: Partial<ExpMeta>) => void
-}): React.JSX.Element {
+}): React.JSX.Element | null {
   const { t } = useTranslation()
   const [collapsed, setCollapsed] = useState(false)
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const dragState = useRef<{ sx: number; sy: number; ox: number; oy: number } | null>(null)
+
+  useEffect(() => {
+    const saved = localStorage.getItem(POS_KEY)
+    if (saved) {
+      try {
+        setPos(JSON.parse(saved) as { x: number; y: number })
+        return
+      } catch {
+        // 忽略损坏数据，走默认居中
+      }
+    }
+    const parent = panelRef.current?.parentElement
+    if (parent) {
+      setPos({ x: Math.max(8, Math.round((parent.clientWidth - 320) / 2)), y: 16 })
+    }
+  }, [])
+
+  useEffect(() => {
+    const onMove = (e: PointerEvent): void => {
+      const d = dragState.current
+      const parent = panelRef.current?.parentElement
+      if (!d || !parent) return
+      const pr = parent.getBoundingClientRect()
+      const w = panelRef.current?.offsetWidth ?? 320
+      const h = panelRef.current?.offsetHeight ?? 400
+      const x = Math.min(Math.max(8, d.ox + e.clientX - d.sx), Math.max(8, pr.width - w - 8))
+      const y = Math.min(Math.max(8, d.oy + e.clientY - d.sy), Math.max(8, pr.height - h - 8))
+      setPos({ x, y })
+    }
+    const onUp = (): void => {
+      if (dragState.current) {
+        dragState.current = null
+        if (panelRef.current) {
+          localStorage.setItem(
+            POS_KEY,
+            JSON.stringify({ x: panelRef.current.offsetLeft, y: panelRef.current.offsetTop })
+          )
+        }
+      }
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+  }, [])
+
+  const onDragStart = (e: React.PointerEvent): void => {
+    if (!pos) return
+    e.preventDefault()
+    dragState.current = { sx: e.clientX, sy: e.clientY, ox: pos.x, oy: pos.y }
+  }
 
   const fmt = (iso: string): string => {
     const d = new Date(iso)
     return Number.isNaN(d.getTime()) ? iso : d.toLocaleString()
   }
 
+  if (!pos) return null
+  const style = { left: pos.x, top: pos.y }
+
   if (collapsed) {
     return (
-      <div className="absolute left-4 top-4 z-20">
+      <div ref={panelRef} className="absolute z-20" style={style}>
         <button
           type="button"
-          className="rounded-lg border border-zinc-200 bg-white/95 px-2.5 py-1.5 text-[12px] font-medium text-zinc-600 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-700 dark:bg-zinc-800/95 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          className="flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/95 px-3 py-2 text-[12.5px] font-medium text-zinc-700 shadow-md backdrop-blur hover:bg-white dark:border-zinc-600 dark:bg-zinc-800/95 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          title={t('panel.expand')}
           onClick={() => setCollapsed(false)}
         >
-          ℹ️ {t('panel.expand')}
+          <span className="flex h-4 w-4 items-center justify-center rounded bg-blue-600 text-[10px] font-bold text-white">
+            i
+          </span>
+          {t('panel.expand')}
+          <span className="text-[10px] text-zinc-400">▸</span>
         </button>
       </div>
     )
   }
 
   return (
-    <div className="absolute left-4 top-4 z-20 w-80 rounded-xl border border-zinc-200 bg-white/95 p-4 shadow-lg backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95">
-      <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-[13px] font-semibold">{t('panel.expand')}</h3>
-        <button type="button" className={btnGhost} onClick={() => setCollapsed(true)}>
+    <div
+      ref={panelRef}
+      className="absolute z-20 w-80 rounded-xl border border-zinc-200 bg-white/95 shadow-lg backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95"
+      style={style}
+    >
+      <div
+        className="flex cursor-move select-none items-center justify-between border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-800"
+        onPointerDown={onDragStart}
+      >
+        <h3 className="text-[13px] font-semibold">ℹ️ {t('panel.expand')}</h3>
+        <button
+          type="button"
+          className="flex h-6 w-6 items-center justify-center rounded-md border border-zinc-300 text-[13px] font-bold leading-none text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+          title={t('panel.collapse')}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={() => setCollapsed(true)}
+        >
           —
         </button>
       </div>
-      <div className="max-h-[calc(100vh-16rem)] space-y-3 overflow-y-auto pr-1">
+      <div className="max-h-[calc(100vh-16rem)] space-y-3 overflow-y-auto p-4">
         <div className="space-y-2">
           <Field label={t('panel.fieldTitle')}>
             <input className={inputCls} value={meta.title} onChange={(e) => onChange({ title: e.target.value })} />

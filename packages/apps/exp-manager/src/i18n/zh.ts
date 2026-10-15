@@ -49,6 +49,7 @@ const zh = {
   },
   panel: {
     expand: '实验信息',
+    collapse: '收起',
     fieldTitle: '标题',
     fieldType: '类型',
     typeHint: '如「细胞培养」「Western blot」',

@@ -135,8 +135,9 @@ export function WorkspacePage({ repo }: { repo: ExpRepo }): React.JSX.Element {
         {doc ? (
           <>
             <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
-              {/* min-h-full 打通高度链：文档可交互区域始终铺满可视区，内容下方空白也可点击/拖放 */}
-              <div className="min-h-full" style={{ zoom } as React.CSSProperties}>
+              {/* h-full（确定高度）打通高度链：父级仅 min-height 时子级百分比高度不解析，
+                  文档可交互区域必须用确定高度才能铺满可视区 */}
+              <div className="h-full" style={{ zoom } as React.CSSProperties}>
                 <DocView blocks={doc.blocks} onChange={updateBlocks} />
               </div>
             </div>

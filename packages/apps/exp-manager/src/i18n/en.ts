@@ -51,6 +51,7 @@ const en: Dict = {
   },
   panel: {
     expand: 'Experiment info',
+    collapse: 'Collapse',
     fieldTitle: 'Title',
     fieldType: 'Type',
     typeHint: 'e.g. "Cell culture", "Western blot"',
