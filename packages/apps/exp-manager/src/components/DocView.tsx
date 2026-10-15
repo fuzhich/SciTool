@@ -91,32 +91,24 @@ export function DocView({
     return () => window.removeEventListener('keydown', onKey)
   }, [selectedId, blocks, onChange])
 
-  // Word 式点击空白：光标落到「上方最近块」的末尾继续输入
+  // Word 式点击空白：光标落到「上方最近块」之后继续输入（空白区域归属其上方内容，与 Word 一致）
   // - 上方是文本块 → 进入其编辑态且光标置末尾
-  // - 上方是表格/图片 → 在其后新建文本块并聚焦
+  // - 上方是表格/图片 → 在其后新建文本块并聚焦；若其后已是空文本块则复用聚焦（不产生重复空行）
   // - 点击在第一块上方 / 空文档 → 从开头新建文本块并聚焦
-  // 距某块 12px 以内视为点击该块本身，忽略（同时取消块选中）
   const onDocClick = (e: React.MouseEvent): void => {
     const target = e.target as HTMLElement
     if (target.closest('[data-block]')) return
     setSelectedId(null)
-    const MARGIN = 12
-    let tooClose = false
     let aboveIdx = -1
     let aboveBottom = -Infinity
     blockRefs.current.forEach((el, i) => {
       if (!el) return
       const rect = el.getBoundingClientRect()
-      if (e.clientY >= rect.top - MARGIN && e.clientY <= rect.bottom + MARGIN) {
-        tooClose = true
-        return
-      }
       if (rect.bottom <= e.clientY && rect.bottom > aboveBottom) {
         aboveBottom = rect.bottom
         aboveIdx = i
       }
     })
-    if (tooClose) return
 
     if (aboveIdx === -1) {
       const block = createTextBlock()
@@ -127,13 +119,18 @@ export function DocView({
     const above = blocks[aboveIdx]
     if (above.kind === 'text') {
       setFocusEndId(above.id)
-    } else {
-      const block = createTextBlock()
-      const next = [...blocks]
-      next.splice(aboveIdx + 1, 0, block)
-      onChange(next)
-      setAutoEditId(block.id)
+      return
     }
+    const nextBlock = blocks[aboveIdx + 1]
+    if (nextBlock?.kind === 'text' && nextBlock.content === '') {
+      setAutoEditId(nextBlock.id)
+      return
+    }
+    const block = createTextBlock()
+    const next = [...blocks]
+    next.splice(aboveIdx + 1, 0, block)
+    onChange(next)
+    setAutoEditId(block.id)
   }
 
   // 依据鼠标 Y 坐标计算插入位置（块中点比较，拖拽用）
@@ -185,6 +182,11 @@ export function DocView({
       if (created.length > 0) {
         const next = [...blocks]
         next.splice(index, 0, ...created)
+        // 图片/表格落为最后一块时自动补空文本块：其后始终有输入位（Typora 式）
+        const last = next[next.length - 1]
+        if (last && last.kind !== 'text') {
+          next.push(createTextBlock())
+        }
         onChange(next)
         setMessage(null)
       }
