@@ -1,0 +1,30 @@
+{
+  "name": "@scitool/exp-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SciTool 实验管理应用——实验文档、项目文件夹与导出",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build",
+    "package": "npm run build && node scripts/package-zip.mjs"
+  },
+  "dependencies": {
+    "i18next": "^25.6.0",
+    "marked": "^15.0.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "react-i18next": "^16.3.0"
+  },
+  "devDependencies": {
+    "@scitool/sdk": "workspace:*",
+    "@tailwindcss/vite": "^4.1.11",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.6"
+  }
+}
