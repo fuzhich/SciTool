@@ -65,15 +65,25 @@ SdkResult<T> = { ok: boolean; data?: T; error?: string }
 - sdk.storage.get 键不存在时返回 { ok: true, data: null }，用 data === null 判断。
 - 调用未声明权限的能力会被权限网关拒绝——manifest 按需声明，不要多声明。
 
-## 5. 推荐开发流程
+## 5. 推荐开发流程与技术栈
 
-1. 位置：monorepo 内 packages/apps/<app-id>/。
-2. 参考实现：packages/apps/dev-guide（React + TS + Vite + Tailwind + i18next，工程骨架可直接复制）。平台不强制栈，任何能产出静态文件的方案均可。
-3. 开发预览：浏览器 vite dev 时平台不在场，挂内存 mock SDK（参考 dev-guide 的 src/lib/sdk.ts），UI 所见即所得。
-4. 构建：vite build（base: './'）。
-5. 打包：manifest.json 与构建产物平铺压缩为 zip（根目录直接含 manifest.json 与入口文件）。
-6. 安装验证：平台应用中心「安装本地包」选择 zip；覆盖安装同 id 即更新。
-7. 自检：typecheck → manifest 对照 3.1 逐字段校验 → 安装 → 启动 → SDK 调用 → 卸载全链路。
+### 5.1 常用技术栈（平台实战验证，两个真实应用均基于此）
+
+- 框架：React 19 + TypeScript + Vite 7 + Tailwind CSS v4（与平台壳同栈，electron-vite 工程可整骨架复用）。
+- 国际化：i18next + react-i18next（zh.ts 定义字典结构 export type Dict，en.ts 按类型对齐）。
+- Markdown 渲染：marked；Excel/CSV 解析：SheetJS（xlsx，取首个工作表 sheet_to_json header:1）+ 自研 CSV 状态机（引号/转义/换行）；打包：JSZip（导出 zip 场景）。
+- 组件策略：UI 基础件自研（Card/Badge/Modal/按钮/内联编辑），延续平台 zinc 色系与圆角层级；不引入重型组件库。
+- 文档类数据：自研 JSON schema 引擎（版本化 + migrate 钩子 + validate 纯函数），不引入数据库/ORM。
+
+### 5.2 实战开发步骤
+
+1. 位置：monorepo 内 packages/apps/<app-id>/；直接复制 dev-guide 或 exp-manager 的工程骨架（package.json / vite.config / tsconfig / scripts/package-zip.mjs）。
+2. 写 manifest：权限按需最小声明 + sharedDomains；id 反域名。
+3. 浏览器 mock 开发：src/lib/sdk.ts 挂内存 mock SDK（storage/sharedData/events 全模拟），vite dev 所见即所得，不必反复打包安装；正式运行自动切平台注入的 window.sdk。
+4. 数据层接口化：文档引擎 parse/serialize/validate/migrate 纯函数模块；仓库层统一走 sharedData + expectedRevision 乐观锁，保存冲突提示「文档已在别处修改，刷新重试」。
+5. 平台实测：npm run package 打 zip（manifest 与产物平铺）→ 应用中心安装 → 手动走主流程。
+6. 冒烟：平台包目录 SCITOOL_SMOKE_ZIP=zip路径 SCITOOL_SMOKE_DOMAIN=应用域 pnpm dev，自动验证 安装→启动→SDK 探针→域授权→共享数据→卸载 全链路。
+7. 收尾：typecheck → manifest 对照 3.1 逐字段校验 → 双语完整 → 暗色目验 → 卸载验证。
 
 ## 6. UI 风格规范（与平台一致）
 
@@ -115,6 +125,8 @@ SdkResult<T> = { ok: boolean; data?: T; error?: string }
 - 可点击元素必须有 hover 反馈（transition-colors + hover 变体）与 disabled 状态。
 - 破坏性操作（删除等）先 window.confirm 确认。
 - 异步操作进行中禁用按钮并显示进行态（…）。
+- 编辑体验优先无缝：多行文本用无边框透明自动伸缩 textarea（受控）实现「直接在页面上打字」，失焦渲染；纯文本小字段（图注/表注/列名）用非受控 contentEditable（挂载时写入一次，避免 React 重置光标）。避免「点一下弹一个输入框」的表单感。
+- 文档类应用的排版参考顶会：正文衬线（Georgia/Times/宋体栈）两端对齐、图表自动编号（Figure/Table 按文档顺序）、图注下图居中、表注上表。
 
 ## 6.7 代码与协作规范
 
@@ -141,5 +153,13 @@ SdkResult<T> = { ok: boolean; data?: T; error?: string }
 - permissions 写错大小写或未知权限名 → 拒绝安装（注意是 storage 不是 Storage）。
 - 调用 sharedData / events 前未在 sharedDomains 声明该域名 → 域名拒绝。
 - put 不带 expectedRevision 会静默覆盖他人修改——并发写场景必须带。
-- 应用内 Node fetch（自更新等）不遵循系统代理，更新源需选国内可达主机。`
+- 应用内 Node fetch（自更新等）不遵循系统代理，更新源需选国内可达主机。
+- 拖拽 drop 失效：dragover 处理器必须每一次事件都 preventDefault，只在状态变化时调用会导致目标元素无法接收拖入（实战踩坑）；dragLeave 用 relatedTarget 判包含，避免行内移动时高亮闪烁。
+- contentEditable 光标怪癖：回车多出行、React 重渲染重置光标——多行编辑用受控 textarea，纯文本小字段用非受控 contentEditable（挂载时写入一次）。
+- 文档版本迁移函数必须补全 format/version 字段，否则旧文档一进列表就抛校验错误拖垮整个列表；列表加载对单个坏文档 try/catch 跳过（容错）。
+- 树形结构移动必须防环：文件夹不能移入自身或其后代（沿父链向上校验）。
+- CSV 导出加 UTF-8 BOM（﻿ 前缀），否则 Excel 打开中文乱码。
+- 大表格渲染：表头 sticky + 数值列右对齐（tabular-nums）+ 超长只展示部分行（展开/收起）。
+- 自动编号（Figure/Table）按文档块顺序动态计算，块移动时编号自动重排，不要存进数据。
+- 全屏工作区类应用：启动调用 sdk.ui.maximize()（SDK 0.4.0+），用特性检测保证旧平台优雅降级；minSdkVersion 保持能运行的最低版本。`
 }
