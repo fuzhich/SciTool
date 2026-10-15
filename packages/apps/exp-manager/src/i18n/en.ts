@@ -46,6 +46,11 @@ const en: Dict = {
     moveDown: 'Move down',
     deleteBlock: 'Delete block'
   },
+  table: {
+    rowCount: '{{count}} rows',
+    expand: 'Expand all',
+    collapse: 'Collapse'
+  },
   panel: {
     expand: 'Experiment info',
     fieldTitle: 'Title',

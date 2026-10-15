@@ -44,6 +44,11 @@ const zh = {
     moveDown: '下移',
     deleteBlock: '删除块'
   },
+  table: {
+    rowCount: '共 {{count}} 行',
+    expand: '展开全部',
+    collapse: '收起'
+  },
   panel: {
     expand: '实验信息',
     fieldTitle: '标题',

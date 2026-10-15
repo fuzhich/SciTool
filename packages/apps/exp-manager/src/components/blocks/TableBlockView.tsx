@@ -1,6 +1,10 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TableBlock } from '../../lib/expdoc'
 import { btnGhost, inputCls } from '../ui'
+
+const ROW_LIMIT = 20
+const NUMERIC = /^-?\d+(\.\d+)?$/
 
 export function TableBlockView({
   block,
@@ -10,10 +14,13 @@ export function TableBlockView({
   onChange: (next: TableBlock) => void
 }): React.JSX.Element {
   const { t } = useTranslation()
+  const [expanded, setExpanded] = useState(false)
+  const truncated = block.rows.length > ROW_LIMIT
+  const rows = expanded ? block.rows : block.rows.slice(0, ROW_LIMIT)
 
   const patchCell = (rowIdx: number, colId: string, value: string): void => {
-    const rows = block.rows.map((r, i) => (i === rowIdx ? { ...r, [colId]: value } : r))
-    onChange({ ...block, rows })
+    const nextRows = block.rows.map((r, i) => (i === rowIdx ? { ...r, [colId]: value } : r))
+    onChange({ ...block, rows: nextRows })
   }
   const addRow = (): void => {
     const row: Record<string, string> = {}
@@ -23,52 +30,70 @@ export function TableBlockView({
   const removeRow = (idx: number): void => {
     onChange({ ...block, rows: block.rows.filter((_, i) => i !== idx) })
   }
+  const isNumeric = (v: string): boolean => NUMERIC.test(v.trim())
 
   return (
     <div className="rounded-lg border border-zinc-200 dark:border-zinc-800">
-      <div className="flex items-center justify-between border-b border-zinc-200 px-3 py-1.5 dark:border-zinc-800">
-        <input
-          className={`${inputCls} w-56 border-transparent bg-transparent text-[13px] font-medium focus:border-blue-400`}
-          placeholder={t('doc.tableUntitled')}
-          value={block.name}
-          onChange={(e) => onChange({ ...block, name: e.target.value })}
-        />
-        <button type="button" className={btnGhost} onClick={addRow}>
-          + {t('doc.addRow')}
-        </button>
+      <div className="flex items-center justify-between gap-2 border-b border-zinc-200 px-3 py-2 dark:border-zinc-800">
+        <div className="flex min-w-0 items-center gap-2">
+          <input
+            className={`${inputCls} w-56 border-transparent bg-transparent text-[13px] font-medium focus:border-blue-400`}
+            placeholder={t('doc.tableUntitled')}
+            value={block.name}
+            onChange={(e) => onChange({ ...block, name: e.target.value })}
+          />
+          <span className="shrink-0 text-[11px] text-zinc-400 dark:text-zinc-500">
+            {t('table.rowCount', { count: block.rows.length })}
+          </span>
+        </div>
+        <div className="flex shrink-0 gap-1">
+          {truncated && (
+            <button type="button" className={btnGhost} onClick={() => setExpanded((v) => !v)}>
+              {expanded ? t('table.collapse') : t('table.expand')}
+            </button>
+          )}
+          <button type="button" className={btnGhost} onClick={addRow}>
+            + {t('doc.addRow')}
+          </button>
+        </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-[12.5px]">
-          <thead>
+      <div className="max-h-96 overflow-auto">
+        <table className="min-w-full text-[12.5px]">
+          <thead className="sticky top-0 z-10">
             <tr>
               {block.columns.map((c) => (
                 <th
                   key={c.id}
-                  className="border-b border-zinc-200 bg-zinc-50 px-3 py-1.5 text-left font-medium text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800/40 dark:text-zinc-300"
+                  className="whitespace-nowrap border-b border-zinc-200 bg-zinc-100 px-3 py-2 text-left font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
                 >
-                  {c.name}
-                  {c.unit && <span className="ml-1 text-[11px] font-normal text-zinc-400">({c.unit})</span>}
+                  {c.name || '—'}
+                  {c.unit && <span className="ml-1 text-[11px] font-normal text-zinc-400 dark:text-zinc-500">({c.unit})</span>}
                 </th>
               ))}
-              <th className="w-10 border-b border-zinc-200 dark:border-zinc-800" />
+              <th className="w-10 border-b border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800" />
             </tr>
           </thead>
           <tbody>
-            {block.rows.map((row, i) => (
-              <tr key={i} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800/60">
+            {rows.map((row, i) => (
+              <tr
+                key={i}
+                className="border-b border-zinc-100 last:border-0 hover:bg-blue-50/40 dark:border-zinc-800/60 dark:hover:bg-blue-950/20"
+              >
                 {block.columns.map((c) => (
-                  <td key={c.id} className="px-1.5 py-0.5">
+                  <td key={c.id} className="p-0">
                     <input
-                      className={`${inputCls} w-full border-transparent bg-transparent focus:border-blue-400`}
+                      className={`h-8 w-full min-w-28 border-0 bg-transparent px-3 text-[12.5px] tabular-nums outline-none focus:bg-blue-50/60 dark:focus:bg-blue-950/30 ${
+                        isNumeric(row[c.id] ?? '') ? 'text-right' : 'text-left'
+                      }`}
                       value={row[c.id] ?? ''}
                       onChange={(e) => patchCell(i, c.id, e.target.value)}
                     />
                   </td>
                 ))}
-                <td className="px-1.5 py-0.5 text-right">
+                <td className="p-0 text-right">
                   <button
                     type="button"
-                    className="rounded px-1.5 text-[12px] text-zinc-300 hover:bg-red-50 hover:text-red-500 dark:text-zinc-600 dark:hover:bg-red-950/40"
+                    className="rounded px-1.5 py-0.5 text-[12px] text-zinc-300 hover:bg-red-50 hover:text-red-500 dark:text-zinc-600 dark:hover:bg-red-950/40"
                     title={t('doc.delRow')}
                     onClick={() => removeRow(i)}
                   >

@@ -126,7 +126,7 @@ export function DocView({
           <p className="text-[12.5px] text-zinc-400 dark:text-zinc-500">{t('doc.dropHint')}</p>
         </div>
       ) : (
-        <div className="mx-auto max-w-3xl space-y-2">
+        <div className="mx-auto w-full max-w-[1400px] space-y-2">
           {blocks.map((block, i) => (
             <div
               key={block.id}
@@ -152,6 +152,13 @@ export function DocView({
                   block={block}
                   initialEditing={block.id === autoEditId}
                   onChange={(content) => patchBlock(i, { ...block, content })}
+                  onEnterNewBlock={() => {
+                    const nb = createTextBlock()
+                    const next = [...blocks]
+                    next.splice(i + 1, 0, nb)
+                    onChange(next)
+                    setAutoEditId(nb.id)
+                  }}
                 />
               )}
               {block.kind === 'table' && <TableBlockView block={block} onChange={(next) => patchBlock(i, next)} />}
