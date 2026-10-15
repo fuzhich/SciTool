@@ -1,6 +1,6 @@
 {
   "name": "@scitool/shell",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "SciTool 平台壳 - 应用中心与运行时",
   "main": "./out/main/index.js",
   "author": "SciTool",

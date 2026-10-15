@@ -10,7 +10,7 @@
       },
       "version": "1.0.0",
       "minSdkVersion": "0.2.0",
-      "zipUrl": "https://github.com/fuzhich/SciTool/releases/download/v0.2.0/dev-guide.zip",
+      "zipUrl": "https://github.com/fuzhich/SciTool/releases/download/v0.3.0/dev-guide.zip",
       "size": 113040
     },
     {
@@ -20,10 +20,10 @@
         "zh": "块式渲染实验文档：表格/统计图/文本自由编排、顶会排版与自动编号、项目文件夹树",
         "en": "Block-based experiment docs: tables/figures/text, conference-style typography, project folder tree"
       },
-      "version": "1.0.0",
+      "version": "1.1.0",
       "minSdkVersion": "0.4.0",
-      "zipUrl": "https://github.com/fuzhich/SciTool/releases/download/v0.2.0/exp-manager.zip",
-      "size": 229517
+      "zipUrl": "https://github.com/fuzhich/SciTool/releases/download/v0.3.0/exp-manager.zip",
+      "size": 231163
     },
     {
       "id": "com.scitool.papers",
@@ -34,7 +34,7 @@
       },
       "version": "1.0.0",
       "minSdkVersion": "0.6.0",
-      "zipUrl": "https://github.com/fuzhich/SciTool/releases/download/v0.2.0/papers.zip",
+      "zipUrl": "https://github.com/fuzhich/SciTool/releases/download/v0.3.0/papers.zip",
       "size": 602977
     }
   ]

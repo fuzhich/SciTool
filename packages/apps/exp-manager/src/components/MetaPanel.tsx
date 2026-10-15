@@ -26,16 +26,24 @@ export function MetaPanel({
   const dragState = useRef<{ sx: number; sy: number; ox: number; oy: number } | null>(null)
 
   useEffect(() => {
+    const parent = panelRef.current?.parentElement
+    const clamp = (p: { x: number; y: number }): { x: number; y: number } => {
+      if (!parent) return p
+      const pr = parent.getBoundingClientRect()
+      return {
+        x: Math.min(Math.max(8, p.x), Math.max(8, pr.width - 320 - 8)),
+        y: Math.min(Math.max(8, p.y), Math.max(8, pr.height - 400 - 8))
+      }
+    }
     const saved = localStorage.getItem(POS_KEY)
     if (saved) {
       try {
-        setPos(JSON.parse(saved) as { x: number; y: number })
+        setPos(clamp(JSON.parse(saved) as { x: number; y: number }))
         return
       } catch {
         // 忽略损坏数据，走默认居中
       }
     }
-    const parent = panelRef.current?.parentElement
     if (parent) {
       setPos({ x: Math.max(8, Math.round((parent.clientWidth - 320) / 2)), y: 16 })
     }
@@ -83,7 +91,10 @@ export function MetaPanel({
     return Number.isNaN(d.getTime()) ? iso : d.toLocaleString()
   }
 
-  if (!pos) return null
+  if (!pos) {
+    // 屏外占位：让 ref 挂载以测量父容器（首次渲染直接 return null 会导致 ref 为 null、位置永远算不出来）
+    return <div ref={panelRef} className="fixed" style={{ left: -9999, top: -9999, width: 320 }} />
+  }
   const style = { left: pos.x, top: pos.y }
 
   if (collapsed) {
