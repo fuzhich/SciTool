@@ -3,9 +3,9 @@
 | 字段 | 内容 |
 |------|------|
 | 时间 | 2026-10-15 |
-| Hash | 5ace51e（悬浮面板）/ 53eff8d 前修复 |
-| 提交信息 | feat: 实验管理悬浮面板——默认居中 + 可拖拽记忆位置 + 明显收起按钮 |
-| 变更内容 | 面板默认顶部居中、拖拽位置 localStorage 持久化、收起胶囊按钮；后续修复初始化死锁（屏外占位符先挂载 ref） |
-| 涉及文件 | packages/apps/exp-manager/src/components/MetaPanel.tsx 等 |
+| Hash | e4dbe35 |
+| 提交信息 | feat: 实验管理导出支持 XLSX 格式 |
+| 变更内容 | 表格块导出 CSV/XLSX 双格式、整体导出 zip 追加整表 xlsx；SDK 0.7.0 saveFile 二进制保存（前序提交） |
+| 涉及文件 | packages/apps/exp-manager/src/lib/export.ts、packages/sdk/*、packages/shell/src/main/sdk-service.ts |
 
-> v0.3.0 已发布（GitHub Release：安装器 + 更新源 + 三应用 zip 资产；实验管理 v1.1.0）。
+> 今日收尾：实验管理原始需求全部落地；v0.3.0 已发布；下一步论文管理 M5b。

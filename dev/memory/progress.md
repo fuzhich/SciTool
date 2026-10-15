@@ -62,6 +62,10 @@
   - 设置页「AI 服务」区：提供商预设（DeepSeek/OpenAI/自定义）+ Base URL + 模型 + API Key（密码框）；**保存即验证**（GET /models，15s 超时，失败不落盘）
   - Key 安全：safeStorage（Windows DPAPI）加密存 ai-config.json，明文/密文均不下发应用
   - sdk.ai.available()/chat()：新 ai 权限，平台代理转发 OpenAI 兼容 /chat/completions（net.fetch 走系统代理），返回 {content, model, usage}
+- [x] **应用市场**（D24）：apps-market.json 清单直连 raw 拉取；应用中心左侧边栏「应用/市场」+ 市场搜索栏；一键安装/更新（Release 资产 + installApp 复用）；市场更新工作流已入 release_checklist 第 6 节
+- [x] **实验管理导出 M4c 完成**（SDK 0.7.0 saveFile 二进制保存）：表格「导出 CSV / XLSX」（当前表）、图片「导出图片」（原图）、右上「导出全部」（zip：tables/*.csv+xlsx、figures/* 原图、experiment.md 对应关系、expdoc.json）；**至此实验管理原始需求（D20）全部落地**
+- [x] **实验管理 v1.1 打磨集**（v0.3.0 发布后继续）：Word 式编辑架构（常驻透明 textarea + 渲染层，原生光标）、空白点击定位上方块末尾、块选中退格删除、跨行合并、Ctrl+滚轮缩放、灰底白页、多子表（expdoc v3，v2→v3 迁移）、实验信息面板抽屉式（右缘竖式把手/拖拽记忆）、UI 冒烟探针 SCITOOL_SMOKE_UI（真实交互验证）
+- [x] **v0.3.0 发布**：安装器 + 更新源 + 三应用 zip 资产（实验管理 1.1.0）；双草稿处理照 checklist
 - [x] **论文管理 M5a**（D23）：
   - paperdoc v1 引擎 + papers 域仓库（树/乐观锁/防环）；PDF 导入（pickFile/拖拽）→ fileStore 存储（≤50MB）
   - 三通道元数据提取：pdfjs 内嵌元数据 → DOI 命中 Crossref 校准（两条均无需 AI）→ AI 首页文本提取候选（增强）；识别来源/失败步骤透明展示
@@ -70,17 +74,18 @@
 
 ### 进行中
 
-- **M4c 实验管理导出**：元素导出（表格块→CSV 带 BOM、图片块→原图）+ 整体导出（zip 打包 tables/charts + experiment.md 对应关系 + expdoc.json）；需平台 SDK `sdk.ui.saveFile`（base64 二进制保存）；导入（zip/JSON 回流）
+- **论文管理 M5b**（D23 规划）：Semantic Scholar 引用网络抓取（references/citations）+ 两级辐射图（自研 SVG）+ 引用列表；预留 S2 API Key 配置位
+- **论文管理 M5c**：知识库四件套生成（摘要/研究路径/团队画像/溯源复现线索，AI 缓存 + 重新生成）
 
 ### 待开发者验证
 
-**实验管理 v2 块式文档 UI 测试**（zip：`packages/apps/exp-manager/dist/exp-manager.zip`）：
+**实验管理 v1.1 测试**（zip：`packages/apps/exp-manager/dist/exp-manager.zip`；**须完全重启 pnpm dev 后覆盖安装**）：
 
-- [ ] 启动即最大化；左侧树新建文件夹/子文件夹/实验，重命名/移动/删除（子项上移）正常
-- [ ] 拖入 CSV → 按位置渲染表格块；单元格就地编辑、行增删；块间插入文本（markdown 失焦渲染）
-- [ ] 拖入图片 → 图片块渲染 + 注释；5MB 限制生效
-- [ ] 悬浮面板：标题/类型/设置/备注编辑 + 折叠；保存后重开数据完好（含旧 v1 文档自动迁移）
-- [ ] 暗色主题下视觉效果；保存冲突提示（两窗口同文档）
+- [ ] Word 式编辑：点击定位/拖选/跨行合并；空白点击光标到上方块末尾；图片后自动输入位
+- [ ] 多 sheet xlsx 拖入：标签页切换、默认第一个
+- [ ] 导出：表格 CSV/XLSX（Excel 打开中文正常）、图片原图、「导出全部」zip 解包核对（md 对应关系 + expdoc.json）
+- [ ] 缩放 Ctrl+滚轮 + 指示器；灰底白页视觉；实验信息面板抽屉拉出/缩回 + 拖拽位置记忆
+- [ ] 旧文档（v1/v2）打开自动迁移且数据完好
 
 **DevGuide 应用 UI 测试**（构建 zip：`pnpm --filter @scitool/dev-guide package`，或直接用已构建的 `packages/apps/dev-guide/dist/dev-guide.zip`）：
 
@@ -102,10 +107,11 @@
 - [ ] 暗色主题视觉目验（标题栏 🌙 切换）
 - [ ] 卸载保护实测：卸载 → data 应出现在 `%LOCALAPPDATA%\SciTool\data-backup` 并弹提示
 
-### 待办（下一步 · M4 分发）
+### 待办（下一步）
 
-- [ ] 远程应用市场（架构已预留：市场清单与包源解耦）
-- [ ] 第一个真实科研应用（候选：文献管理 / PDF 批注 / 写作 / 翻译；可参考 DevGuide 的实现模式）
+- [ ] 论文管理 M5b/M5c（引用网络 + 知识库四件套）
+- [ ] 实验管理 v1.1 后续发布：版本号 1.2.0（或并入下一平台版本）+ apps-market.json 更新 + 按 release_checklist 发布
+- [ ] 论文管理/实验管理实测反馈的持续迭代
 - [ ] 代码签名：开发者已决定**不需要**（自用/内部分发）
 
 ## 历史进度
@@ -120,3 +126,4 @@
 - 2026-10-15 会话八：实验管理应用 M4a——expdoc 文档引擎 + 仓库层 + 编辑页/列表页（D20）
 - 2026-10-15 会话九：实验管理重构——块式渲染文档 + 全屏工作区 + SDK 0.4.0 maximize（D21）
 - 2026-10-15 会话十：实验管理多轮 UI 打磨（树拖拽/无缝编辑/顶会排版/退格合并）→ **v2 里程碑达成，开发者验收「非常漂亮」**
+- 2026-10-15 会话十一（晚间）：论文管理 M5a + SDK 0.6.0 三件套 + 平台 AI 服务 + 应用市场 + v0.3.0 发布 + 实验管理 v1.1 打磨集（Word 式编辑/多子表/导出 CSV+XLSX/抽屉面板/灰底白页/缩放）+ UI 冒烟探针落地
