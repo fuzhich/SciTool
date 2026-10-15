@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ExpBlock } from '../lib/expdoc'
 import { MAX_IMAGE_BYTES, createImageBlock, createTableBlock, createTextBlock } from '../lib/expdoc'
@@ -22,6 +22,7 @@ export function DocView({
   const [message, setMessage] = useState<string | null>(null)
   const [autoEditId, setAutoEditId] = useState<string | null>(null)
   const [focusEndId, setFocusEndId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const patchBlock = (index: number, next: ExpBlock): void => {
     onChange(blocks.map((b, i) => (i === index ? next : b)))
@@ -47,7 +48,95 @@ export function DocView({
     else if (next?.kind === 'text') setFocusEndId(next.id)
   }
 
-  // 依据鼠标 Y 坐标计算插入位置（块中点比较）
+  // 跨行删除：行首退格 → 本块内容并入上一文本块末尾
+  const mergeWithPrev = (index: number): void => {
+    const prev = blocks[index - 1]
+    const cur = blocks[index]
+    if (!prev || prev.kind !== 'text' || cur.kind !== 'text') return
+    const next = [...blocks]
+    next[index - 1] = { ...prev, content: prev.content + cur.content }
+    next.splice(index, 1)
+    onChange(next)
+    setFocusEndId(prev.id)
+  }
+
+  // 跨行删除：行尾 Delete → 下一文本块内容并入本块末尾
+  const mergeWithNext = (index: number): void => {
+    const cur = blocks[index]
+    const nxt = blocks[index + 1]
+    if (!nxt || nxt.kind !== 'text' || cur.kind !== 'text') return
+    const next = [...blocks]
+    next[index] = { ...cur, content: cur.content + nxt.content }
+    next.splice(index + 1, 1)
+    onChange(next)
+    setFocusEndId(cur.id)
+  }
+
+  // 选中表格/图片块后按 Backspace/Delete 删除（焦点不在输入控件时）
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      if (!selectedId) return
+      const t = e.target as HTMLElement | null
+      if (t && t.closest('textarea, input, [contenteditable]')) return
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        e.preventDefault()
+        const idx = blocks.findIndex((b) => b.id === selectedId)
+        if (idx >= 0) {
+          onChange(blocks.filter((_, i) => i !== idx))
+          setSelectedId(null)
+        }
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selectedId, blocks, onChange])
+
+  // Word 式点击空白：光标落到「上方最近块」的末尾继续输入
+  // - 上方是文本块 → 进入其编辑态且光标置末尾
+  // - 上方是表格/图片 → 在其后新建文本块并聚焦
+  // - 点击在第一块上方 / 空文档 → 从开头新建文本块并聚焦
+  // 距某块 12px 以内视为点击该块本身，忽略（同时取消块选中）
+  const onDocClick = (e: React.MouseEvent): void => {
+    const target = e.target as HTMLElement
+    if (target.closest('[data-block]')) return
+    setSelectedId(null)
+    const MARGIN = 12
+    let tooClose = false
+    let aboveIdx = -1
+    let aboveBottom = -Infinity
+    blockRefs.current.forEach((el, i) => {
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      if (e.clientY >= rect.top - MARGIN && e.clientY <= rect.bottom + MARGIN) {
+        tooClose = true
+        return
+      }
+      if (rect.bottom <= e.clientY && rect.bottom > aboveBottom) {
+        aboveBottom = rect.bottom
+        aboveIdx = i
+      }
+    })
+    if (tooClose) return
+
+    if (aboveIdx === -1) {
+      const block = createTextBlock()
+      onChange([block, ...blocks])
+      setAutoEditId(block.id)
+      return
+    }
+    const above = blocks[aboveIdx]
+    if (above.kind === 'text') {
+      setFocusEndId(above.id)
+    } else {
+      const block = createTextBlock()
+      const next = [...blocks]
+      next.splice(aboveIdx + 1, 0, block)
+      onChange(next)
+      setAutoEditId(block.id)
+    }
+  }
+
+  // 依据鼠标 Y 坐标计算插入位置（块中点比较，拖拽用）
   const indexAt = (clientY: number): number => {
     for (let i = 0; i < blockRefs.current.length; i++) {
       const el = blockRefs.current[i]
@@ -57,52 +146,6 @@ export function DocView({
       }
     }
     return blocks.length
-  }
-
-  // 点击空白处：光标落到最近块的末尾继续输入。
-  // - 最近的块是文本块 → 进入其编辑态且光标置末尾
-  // - 最近的块是表格/图片 → 在其后新建文本块并聚焦
-  // - 空文档 → 从开头新建文本块并聚焦
-  // 点击位置距某块 12px 以内视为点击该块本身（由其自身处理），忽略。
-  const onDocClick = (e: React.MouseEvent): void => {
-    const target = e.target as HTMLElement
-    if (target.closest('[data-block]')) return
-    const MARGIN = 12
-    let nearestIdx = -1
-    let nearestDist = Infinity
-    blockRefs.current.forEach((el, i) => {
-      if (!el) return
-      const rect = el.getBoundingClientRect()
-      if (e.clientY >= rect.top - MARGIN && e.clientY <= rect.bottom + MARGIN) {
-        nearestIdx = i
-        nearestDist = -1
-        return
-      }
-      const dist = Math.abs(e.clientY - (rect.top + rect.height / 2))
-      if (dist < nearestDist) {
-        nearestDist = dist
-        nearestIdx = i
-      }
-    })
-    if (nearestDist === -1) return
-
-    if (nearestIdx === -1) {
-      // 空文档：从开头开始
-      const block = createTextBlock()
-      onChange([...blocks, block])
-      setAutoEditId(block.id)
-      return
-    }
-    const nearest = blocks[nearestIdx]
-    if (nearest.kind === 'text') {
-      setFocusEndId(nearest.id)
-    } else {
-      const block = createTextBlock()
-      const next = [...blocks]
-      next.splice(nearestIdx + 1, 0, block)
-      onChange(next)
-      setAutoEditId(block.id)
-    }
   }
 
   const onDrop = (e: React.DragEvent): void => {
@@ -188,51 +231,69 @@ export function DocView({
         </div>
       ) : (
         <div className="mx-auto w-full max-w-[1400px]" onClick={onDocClick}>
-          {blocks.map((block, i) => (
-            <div
-              key={block.id}
-              data-block
-              ref={(el) => {
-                blockRefs.current[i] = el
-              }}
-              className="group relative"
-            >
-              <div className="absolute -top-2.5 right-2 z-10 hidden gap-0.5 rounded-md border border-zinc-200 bg-white px-0.5 py-0.5 shadow-sm group-hover:flex dark:border-zinc-700 dark:bg-zinc-800">
-                <button type="button" className={menuCls} title={t('doc.moveUp')} onClick={() => moveBlock(i, -1)}>
-                  ↑
-                </button>
-                <button type="button" className={menuCls} title={t('doc.moveDown')} onClick={() => moveBlock(i, 1)}>
-                  ↓
-                </button>
-                <button type="button" className={menuCls} title={t('doc.deleteBlock')} onClick={() => removeBlock(i)}>
-                  ✕
-                </button>
+          {blocks.map((block, i) => {
+            const selected = block.id === selectedId
+            return (
+              <div
+                key={block.id}
+                data-block
+                ref={(el) => {
+                  blockRefs.current[i] = el
+                }}
+                className={`group relative ${selected ? 'rounded-lg ring-2 ring-blue-400/70' : ''}`}
+                onClick={(ev) => {
+                  if (block.kind === 'text') return
+                  ev.stopPropagation()
+                  setSelectedId(selected ? null : block.id)
+                }}
+              >
+                <div className="absolute -top-2.5 right-2 z-10 hidden gap-0.5 rounded-md border border-zinc-200 bg-white px-0.5 py-0.5 shadow-sm group-hover:flex dark:border-zinc-700 dark:bg-zinc-800">
+                  <button type="button" className={menuCls} title={t('doc.moveUp')} onClick={() => moveBlock(i, -1)}>
+                    ↑
+                  </button>
+                  <button type="button" className={menuCls} title={t('doc.moveDown')} onClick={() => moveBlock(i, 1)}>
+                    ↓
+                  </button>
+                  <button
+                    type="button"
+                    className={menuCls}
+                    title={t('doc.deleteBlock')}
+                    onClick={() => {
+                      removeBlock(i)
+                      setSelectedId(null)
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+                {block.kind === 'text' && (
+                  <TextBlockView
+                    block={block}
+                    initialEditing={block.id === autoEditId}
+                    focusEndSignal={block.id === focusEndId}
+                    onChange={(content) => patchBlock(i, { ...block, content })}
+                    onEnterNewBlock={() => {
+                      const nb = createTextBlock()
+                      const next = [...blocks]
+                      next.splice(i + 1, 0, nb)
+                      onChange(next)
+                      setAutoEditId(nb.id)
+                    }}
+                    onBackspaceEmpty={() => onBackspaceEmpty(i)}
+                    onBackspaceStart={() => mergeWithPrev(i)}
+                    onDeleteEnd={() => mergeWithNext(i)}
+                    onFocusEndDone={() => setFocusEndId(null)}
+                  />
+                )}
+                {block.kind === 'table' && (
+                  <TableBlockView block={block} tableNo={numbers[i].no} onChange={(next) => patchBlock(i, next)} />
+                )}
+                {block.kind === 'image' && (
+                  <ImageBlockView block={block} figureNo={numbers[i].no} onChange={(next) => patchBlock(i, next)} />
+                )}
               </div>
-              {block.kind === 'text' && (
-                <TextBlockView
-                  block={block}
-                  initialEditing={block.id === autoEditId}
-                  focusEndSignal={block.id === focusEndId}
-                  onChange={(content) => patchBlock(i, { ...block, content })}
-                  onEnterNewBlock={() => {
-                    const nb = createTextBlock()
-                    const next = [...blocks]
-                    next.splice(i + 1, 0, nb)
-                    onChange(next)
-                    setAutoEditId(nb.id)
-                  }}
-                  onBackspaceEmpty={() => onBackspaceEmpty(i)}
-                  onFocusEndDone={() => setFocusEndId(null)}
-                />
-              )}
-              {block.kind === 'table' && (
-                <TableBlockView block={block} tableNo={numbers[i].no} onChange={(next) => patchBlock(i, next)} />
-              )}
-              {block.kind === 'image' && (
-                <ImageBlockView block={block} figureNo={numbers[i].no} onChange={(next) => patchBlock(i, next)} />
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
       {message && <p className="mt-3 text-center text-[12px] text-red-500 dark:text-red-400">{message}</p>}
