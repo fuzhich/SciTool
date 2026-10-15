@@ -15,5 +15,7 @@ export const SHELL_CHANNELS = {
   updateInstall: 'platform:update:install',
   updateStatusChanged: 'platform:update:status-changed',
   appUpdateCheck: 'platform:app-update:check',
-  onAppsChanged: 'platform:apps:changed'
+  onAppsChanged: 'platform:apps:changed',
+  aiConfigGet: 'platform:ai-config:get',
+  aiConfigSet: 'platform:ai-config:set'
 } as const

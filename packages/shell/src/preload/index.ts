@@ -37,6 +37,16 @@ const api = {
       }
     }
   },
+  ai: {
+    get: (): Promise<SdkResult<{ provider: string; baseUrl: string; model: string; hasKey: boolean }>> =>
+      ipcRenderer.invoke(SHELL_CHANNELS.aiConfigGet),
+    set: (patch: {
+      provider?: string
+      baseUrl?: string
+      model?: string
+      apiKey?: string
+    }): Promise<SdkResult> => ipcRenderer.invoke(SHELL_CHANNELS.aiConfigSet, patch)
+  },
   onAppsChanged: (callback: (apps: AppRecord[]) => void): (() => void) => {
     const listener = (_e: Electron.IpcRendererEvent, apps: AppRecord[]): void => callback(apps)
     ipcRenderer.on(SHELL_CHANNELS.onAppsChanged, listener)

@@ -15,7 +15,9 @@ export const SDK_CHANNELS = {
   sharedDataRemove: 'sdk:shared-data:remove',
   eventsSubscribe: 'sdk:events:subscribe',
   eventsUnsubscribe: 'sdk:events:unsubscribe',
-  eventsNotify: 'sdk:events:notify'
+  eventsNotify: 'sdk:events:notify',
+  aiAvailable: 'sdk:ai:available',
+  aiChat: 'sdk:ai:chat'
 } as const
 
 export const SHELL_CHANNELS = {

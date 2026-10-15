@@ -3,6 +3,8 @@ import type { AppRecord, PlatformSettings, SdkResult } from '@scitool/sdk'
 import { SHELL_CHANNELS } from '../shared/shell-channels'
 import { installApp, launchApp, listApps, pickZipPath, uninstallApp } from './app-manager'
 import { getSettings, updateSettings } from './settings-store'
+import { getApiKey, loadAiConfig, saveAiConfig } from './ai-config'
+import { validateAiConfig } from './ai-service'
 import { moveDataDir } from './data-dir'
 import {
   checkForUpdates,
@@ -138,6 +140,34 @@ export function registerShellServices(): void {
       if (typeof appId !== 'string') throw new Error('应用 id 缺失')
       const { checkAppUpdate } = await import('./app-updater')
       return checkAppUpdate(appId)
+    })
+  })
+
+  ipcMain.handle(SHELL_CHANNELS.aiConfigGet, (event) => {
+    if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
+    const cfg = loadAiConfig()
+    // Key 永不下发渲染层，仅返回是否已配置
+    return {
+      ok: true,
+      data: { provider: cfg.provider, baseUrl: cfg.baseUrl, model: cfg.model, hasKey: cfg.encryptedKey !== null }
+    }
+  })
+
+  ipcMain.handle(SHELL_CHANNELS.aiConfigSet, (event, payload: unknown) => {
+    if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
+    return wrap(async () => {
+      const patch = payload as {
+        provider?: 'deepseek' | 'openai' | 'custom'
+        baseUrl?: string
+        model?: string
+        apiKey?: string
+      }
+      if (!patch.baseUrl || !/^https?:\/\//.test(patch.baseUrl)) throw new Error('Base URL 需以 http(s):// 开头')
+      // 保存即验证：用提交的 Key（留空则用已存 Key）验证有效性
+      const key = patch.apiKey && patch.apiKey !== '' ? patch.apiKey : getApiKey()
+      if (!key) throw new Error('请先填入 API Key')
+      await validateAiConfig({ baseUrl: patch.baseUrl, apiKey: key })
+      saveAiConfig(patch)
     })
   })
 }

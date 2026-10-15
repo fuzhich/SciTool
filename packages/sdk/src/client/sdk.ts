@@ -1,5 +1,6 @@
 import { SDK_CHANNELS } from '../shared/channels'
 import type {
+  AiChatResult,
   LogPayload,
   NotificationOptions,
   PlatformLanguage,
@@ -133,6 +134,19 @@ export function createSdk(appId: string, invoker: SdkInvoker): Sdk {
           expectedRevision
         })
         return res.ok ? { ok: true } : { ok: false, error: res.error }
+      }
+    },
+    ai: {
+      available: async (): Promise<SdkResult<boolean>> => {
+        const res = await invoker.invoke<{ ok: boolean; data?: boolean; error?: string }>(SDK_CHANNELS.aiAvailable)
+        return res.ok ? { ok: true, data: res.data ?? false } : { ok: false, error: res.error }
+      },
+      chat: async (messages, options): Promise<SdkResult<AiChatResult>> => {
+        const res = await invoker.invoke<{ ok: boolean; data?: AiChatResult; error?: string }>(
+          SDK_CHANNELS.aiChat,
+          { messages, options }
+        )
+        return res.ok ? { ok: true, data: res.data } : { ok: false, error: res.error }
       }
     },
     events: {

@@ -1,4 +1,4 @@
-export const SDK_VERSION = '0.4.0'
+export const SDK_VERSION = '0.5.0'
 
 export type Permission =
   | 'storage'
@@ -8,6 +8,8 @@ export type Permission =
   // 预留（M2+）
   | 'sharedData'
   | 'events'
+  // SDK 0.5.0：经平台代理调用 AI（Key 由平台统一配置，不下发应用）
+  | 'ai'
 
 export interface LocalizedText {
   zh: string
@@ -115,6 +117,33 @@ export interface SharedDataQuery {
   domain?: string
 }
 
+// === SDK 0.5.0：平台 AI 代理 ===
+
+export interface AiMessage {
+  role: 'system' | 'user' | 'assistant'
+  content: string
+}
+
+export interface AiChatOptions {
+  model?: string
+  temperature?: number
+  maxTokens?: number
+}
+
+export interface AiChatResult {
+  content: string
+  model: string
+  usage?: {
+    promptTokens?: number
+    completionTokens?: number
+  }
+}
+
+export interface SdkAi {
+  available: () => Promise<SdkResult<boolean>>
+  chat: (messages: AiMessage[], options?: AiChatOptions) => Promise<SdkResult<AiChatResult>>
+}
+
 export interface SharedDataPutOptions {
   domain: string
   expectedRevision?: number
@@ -143,4 +172,5 @@ export interface Sdk {
   events: {
     subscribe: (domain: string, callback: (event: SharedDocEvent) => void) => Promise<SdkResult<() => void>>
   }
+  ai: SdkAi
 }

@@ -23,6 +23,18 @@ interface UpdateStatus {
   message?: string
 }
 
+const AI_PRESETS: Record<string, { baseUrl: string; model: string }> = {
+  deepseek: { baseUrl: 'https://api.deepseek.com', model: 'deepseek-chat' },
+  openai: { baseUrl: 'https://api.openai.com', model: 'gpt-4o-mini' },
+  custom: { baseUrl: '', model: '' }
+}
+
+type AiSaveState =
+  | { phase: 'idle' }
+  | { phase: 'checking' }
+  | { phase: 'ok' }
+  | { phase: 'error'; message: string }
+
 export function SettingsModal({ open, onClose }: Props): React.JSX.Element | null {
   const { t } = useTranslation()
   const { settings, updateSettings } = useAppStore()
@@ -31,10 +43,18 @@ export function SettingsModal({ open, onClose }: Props): React.JSX.Element | nul
   const [version, setVersion] = useState('')
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ state: 'idle' })
   const [busy, setBusy] = useState(false)
+  const [aiProvider, setAiProvider] = useState('deepseek')
+  const [aiBaseUrl, setAiBaseUrl] = useState(AI_PRESETS.deepseek.baseUrl)
+  const [aiModel, setAiModel] = useState(AI_PRESETS.deepseek.model)
+  const [aiHasKey, setAiHasKey] = useState(false)
+  const [aiKey, setAiKey] = useState('')
+  const [aiState, setAiState] = useState<AiSaveState>({ phase: 'idle' })
 
   useEffect(() => {
     if (!open) return
     setMoving(false)
+    setAiState({ phase: 'idle' })
+    setAiKey('')
     void window.api.dataDir.get().then((res) => {
       if (res.ok && res.data) setDataDir(res.data.current)
     })
@@ -44,7 +64,39 @@ export function SettingsModal({ open, onClose }: Props): React.JSX.Element | nul
         setUpdateStatus(res.data.status as UpdateStatus)
       }
     })
+    void window.api.ai.get().then((res) => {
+      if (res.ok && res.data) {
+        setAiProvider(res.data.provider)
+        setAiBaseUrl(res.data.baseUrl)
+        setAiModel(res.data.model)
+        setAiHasKey(res.data.hasKey)
+      }
+    })
   }, [open])
+
+  const onProviderChange = (provider: string): void => {
+    setAiProvider(provider)
+    setAiBaseUrl(AI_PRESETS[provider]?.baseUrl ?? '')
+    setAiModel(AI_PRESETS[provider]?.model ?? '')
+    setAiState({ phase: 'idle' })
+  }
+
+  const onSaveAi = async (): Promise<void> => {
+    setAiState({ phase: 'checking' })
+    const res = await window.api.ai.set({
+      provider: aiProvider,
+      baseUrl: aiBaseUrl,
+      model: aiModel,
+      apiKey: aiKey
+    })
+    if (res.ok) {
+      setAiState({ phase: 'ok' })
+      setAiKey('')
+      setAiHasKey(true)
+    } else {
+      setAiState({ phase: 'error', message: res.error ?? 'unknown' })
+    }
+  }
 
   useEffect(() => {
     return window.api.updates.onStatusChanged((status) => {
@@ -129,6 +181,63 @@ export function SettingsModal({ open, onClose }: Props): React.JSX.Element | nul
                 {t(th)}
               </Button>
             ))}
+          </div>
+        </section>
+
+        <section className="mb-6">
+          <h3 className="text-[13px] font-medium text-zinc-800 dark:text-zinc-200">{t('aiService')}</h3>
+          <p className="mt-1 text-xs leading-4 text-zinc-500 dark:text-zinc-400">{t('aiDesc')}</p>
+          <div className="mt-3 space-y-2">
+            <div className="flex items-center gap-2">
+              <select
+                className="h-8 flex-1 rounded-lg border border-zinc-300 bg-white px-2 text-xs text-zinc-700 outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300"
+                value={aiProvider}
+                onChange={(e) => onProviderChange(e.target.value)}
+              >
+                <option value="deepseek">DeepSeek</option>
+                <option value="openai">OpenAI</option>
+                <option value="custom">{t('aiCustom')}</option>
+              </select>
+              <input
+                type="password"
+                className="h-8 flex-1 rounded-lg border border-zinc-300 bg-white px-2 text-xs text-zinc-700 outline-none focus:border-blue-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300"
+                placeholder={aiHasKey ? t('aiKeyPlaceholder') : t('aiKey')}
+                value={aiKey}
+                onChange={(e) => {
+                  setAiKey(e.target.value)
+                  setAiState({ phase: 'idle' })
+                }}
+              />
+            </div>
+            <input
+              className="h-8 w-full rounded-lg border border-zinc-300 bg-white px-2 text-xs text-zinc-700 outline-none focus:border-blue-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300"
+              placeholder={t('aiBaseUrl')}
+              value={aiBaseUrl}
+              onChange={(e) => {
+                setAiBaseUrl(e.target.value)
+                setAiState({ phase: 'idle' })
+              }}
+            />
+            <input
+              className="h-8 w-full rounded-lg border border-zinc-300 bg-white px-2 text-xs text-zinc-700 outline-none focus:border-blue-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300"
+              placeholder={t('aiModel')}
+              value={aiModel}
+              onChange={(e) => {
+                setAiModel(e.target.value)
+                setAiState({ phase: 'idle' })
+              }}
+            />
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" disabled={aiState.phase === 'checking'} onClick={() => void onSaveAi()}>
+                {aiState.phase === 'checking' ? t('aiChecking') : t('aiSave')}
+              </Button>
+              {aiState.phase === 'ok' && <span className="text-xs text-emerald-600 dark:text-emerald-400">{t('aiValid')}</span>}
+              {aiState.phase === 'error' && (
+                <span className="min-w-0 flex-1 truncate text-xs text-red-500 dark:text-red-400" title={aiState.message}>
+                  {t('aiInvalid')}: {aiState.message}
+                </span>
+              )}
+            </div>
           </div>
         </section>
 

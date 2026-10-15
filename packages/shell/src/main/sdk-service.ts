@@ -1,6 +1,7 @@
 import { BrowserWindow, dialog } from 'electron'
 import { writeFileSync } from 'fs'
-import { SDK_CHANNELS, type LogPayload, type NotificationOptions } from '@scitool/sdk'
+import { SDK_CHANNELS, type AiMessage, type LogPayload, type NotificationOptions } from '@scitool/sdk'
+import { aiAvailable, aiChat } from './ai-service'
 import { getDb } from './db'
 import { registerSdkHandler } from './permission-gateway'
 import { getSettings } from './settings-store'
@@ -126,5 +127,19 @@ export function registerSdkServices(): void {
     const { subscriptionId } = payload as { subscriptionId: number }
     unsubscribeEvents(subscriptionId)
     return { ok: true }
+  })
+
+  // === SDK 0.5.0: 平台 AI 代理 ===
+
+  registerSdkHandler(SDK_CHANNELS.aiAvailable, () => {
+    return aiAvailable()
+  })
+
+  registerSdkHandler(SDK_CHANNELS.aiChat, (_e, payload) => {
+    const { messages, options } = payload as {
+      messages: AiMessage[]
+      options?: { model?: string; temperature?: number; maxTokens?: number }
+    }
+    return aiChat(messages, options)
   })
 }

@@ -18,7 +18,9 @@ const CHANNEL_PERMISSION: Record<string, Permission> = {
   [SDK_CHANNELS.sharedDataList]: 'sharedData',
   [SDK_CHANNELS.sharedDataRemove]: 'sharedData',
   [SDK_CHANNELS.eventsSubscribe]: 'events',
-  [SDK_CHANNELS.eventsUnsubscribe]: 'events'
+  [SDK_CHANNELS.eventsUnsubscribe]: 'events',
+  [SDK_CHANNELS.aiAvailable]: 'ai',
+  [SDK_CHANNELS.aiChat]: 'ai'
 }
 
 export interface AppWindowEntry {
