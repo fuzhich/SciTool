@@ -1,0 +1,18 @@
+{
+  "id": "com.scitool.papers",
+  "name": {
+    "zh": "论文管理",
+    "en": "Papers"
+  },
+  "version": "1.0.0",
+  "minSdkVersion": "0.6.0",
+  "description": {
+    "zh": "论文管理：文件树组织论文，PDF 导入后自动识别元数据（AI 增强 + 学术 API 校准），支持自定义命名",
+    "en": "Paper manager: organize papers in a file tree, auto-extract metadata after PDF import (AI-enhanced + scholarly API calibration), custom naming"
+  },
+  "entry": "index.html",
+  "permissions": ["storage", "settings", "log", "ui", "sharedData", "events", "ai", "fileStore", "net"],
+  "sharedDomains": [
+    { "domain": "papers", "access": "write" }
+  ]
+}

@@ -1,0 +1,140 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  font-family:
+    'Segoe UI',
+    'PingFang SC',
+    'Hiragino Sans GB',
+    'Microsoft YaHei',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgb(37 99 235 / 0.15);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(0 0 0 / 0.12);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* 正文排版（顶会风格）：衬线字体 14px / 1.7 行高，段落两端对齐 */
+.doc-serif {
+  font-family:
+    Georgia,
+    'Times New Roman',
+    'Noto Serif SC',
+    SimSun,
+    'Songti SC',
+    serif;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+  font-weight: 600;
+  margin: 0.9em 0 0.4em;
+}
+
+.markdown-body h1 {
+  font-size: 1.25em;
+}
+
+.markdown-body h2 {
+  font-size: 1.1em;
+}
+
+.markdown-body h3 {
+  font-size: 1em;
+}
+
+.markdown-body p {
+  margin: 0.3em 0;
+  text-align: justify;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 1.4em;
+  margin: 0.3em 0;
+}
+
+.markdown-body ul {
+  list-style: disc;
+}
+
+.markdown-body ol {
+  list-style: decimal;
+}
+
+.markdown-body code {
+  font-family: Consolas, monospace;
+  background: rgb(0 0 0 / 0.06);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-size: 0.9em;
+}
+
+.dark .markdown-body code {
+  background: rgb(255 255 255 / 0.12);
+}
+
+.markdown-body pre {
+  background: rgb(0 0 0 / 0.06);
+  border-radius: 8px;
+  padding: 0.6em 0.8em;
+  overflow-x: auto;
+}
+
+.dark .markdown-body pre {
+  background: rgb(255 255 255 / 0.08);
+}
+
+.markdown-body pre code {
+  background: none;
+  padding: 0;
+}
+
+.markdown-body table {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid rgb(0 0 0 / 0.12);
+  padding: 0.25em 0.6em;
+  font-size: 0.9em;
+}
+
+.dark .markdown-body th,
+.dark .markdown-body td {
+  border-color: rgb(255 255 255 / 0.15);
+}
