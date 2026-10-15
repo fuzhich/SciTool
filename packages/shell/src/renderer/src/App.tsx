@@ -79,9 +79,11 @@ function AppCard({ app }: { app: AppRecord }): React.JSX.Element {
         <h3 className="truncate text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">{name}</h3>
         <p className="mt-1 line-clamp-2 text-[13px] leading-5 text-zinc-500 dark:text-zinc-400">{desc}</p>
       </div>
-      <div className="mt-auto flex items-center justify-between pt-1">
-        <span className="text-[11px] text-zinc-400 dark:text-zinc-500">{app.id}</span>
-        <div className="flex gap-2">
+      <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+        <span className="min-w-0 truncate text-[11px] text-zinc-400 dark:text-zinc-500" title={app.id}>
+          {app.id.split('.').pop() ?? app.id}
+        </span>
+        <div className="flex shrink-0 gap-2">
           <Button size="sm" variant="ghost" disabled={busy} onClick={onCheckUpdate}>
             {t('appUpdateCheck')}
           </Button>
