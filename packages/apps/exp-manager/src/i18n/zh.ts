@@ -31,7 +31,6 @@ const zh = {
     emptyTitle: '未选择实验',
     emptyDesc: '从左侧选择实验文件，或点「新建实验」开始记录。',
     dropHint: '将 CSV / Excel / 图片拖入此处，自动渲染为表格块 / 图片块；点击空白处直接开始输入',
-    textPlaceholder: '输入内容，支持 markdown…',
     tableUntitled: '未命名表格',
     addRow: '添加行',
     delRow: '删行',
@@ -39,7 +38,6 @@ const zh = {
     imageTooBig: '图片超过 5MB 限制，未添加',
     imageInvalid: '仅支持 CSV、Excel 与图片文件',
     tableEmpty: '表格内容为空，未添加',
-    imageCaption: '图片注释…',
     moveUp: '上移',
     moveDown: '下移',
     deleteBlock: '删除块'

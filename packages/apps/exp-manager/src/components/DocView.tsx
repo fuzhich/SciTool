@@ -107,6 +107,22 @@ export function DocView({
   const menuCls =
     'rounded px-1.5 py-0.5 text-[11.5px] text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-200'
 
+  // 按文档顺序自动编号 Figure/Table
+  const numbers: { kind: 'figure' | 'table'; no: number }[] = []
+  let tableNo = 0
+  let figureNo = 0
+  for (const b of blocks) {
+    if (b.kind === 'table') {
+      tableNo++
+      numbers.push({ kind: 'table', no: tableNo })
+    } else if (b.kind === 'image') {
+      figureNo++
+      numbers.push({ kind: 'figure', no: figureNo })
+    } else {
+      numbers.push({ kind: 'figure', no: 0 })
+    }
+  }
+
   return (
     <div
       className={`min-h-full flex-1 cursor-text px-16 py-8 ${dragging ? 'bg-blue-50/60 dark:bg-blue-950/20' : ''}`}
@@ -161,8 +177,12 @@ export function DocView({
                   }}
                 />
               )}
-              {block.kind === 'table' && <TableBlockView block={block} onChange={(next) => patchBlock(i, next)} />}
-              {block.kind === 'image' && <ImageBlockView block={block} onChange={(next) => patchBlock(i, next)} />}
+              {block.kind === 'table' && (
+                <TableBlockView block={block} tableNo={numbers[i].no} onChange={(next) => patchBlock(i, next)} />
+              )}
+              {block.kind === 'image' && (
+                <ImageBlockView block={block} figureNo={numbers[i].no} onChange={(next) => patchBlock(i, next)} />
+              )}
             </div>
           ))}
         </div>

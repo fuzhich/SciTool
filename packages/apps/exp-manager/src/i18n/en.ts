@@ -33,7 +33,6 @@ const en: Dict = {
     emptyTitle: 'No experiment selected',
     emptyDesc: 'Pick an experiment file on the left, or click "New experiment" to start.',
     dropHint: 'Drop CSV / Excel / images here to render table / image blocks; click empty space to start typing',
-    textPlaceholder: 'Write here, markdown supported…',
     tableUntitled: 'Untitled table',
     addRow: 'Add row',
     delRow: 'Del row',
@@ -41,7 +40,6 @@ const en: Dict = {
     imageTooBig: 'Image exceeds the 5MB limit, skipped',
     imageInvalid: 'Only CSV, Excel and image files are supported',
     tableEmpty: 'Table is empty, skipped',
-    imageCaption: 'Image caption…',
     moveUp: 'Move up',
     moveDown: 'Move down',
     deleteBlock: 'Delete block'

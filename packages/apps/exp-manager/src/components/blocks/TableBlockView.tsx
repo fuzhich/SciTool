@@ -1,16 +1,21 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TableBlock } from '../../lib/expdoc'
-import { btnGhost, inputCls } from '../ui'
+import { btnGhost } from '../ui'
+import { InlineCaption } from './InlineCaption'
 
 const ROW_LIMIT = 20
 const NUMERIC = /^-?\d+(\.\d+)?$/
 
+// 表格模块（顶会排版）：表注在上方（Table n. 自动编号 + 无缝内联编辑），
+// 格子统一（h-8/min-w-28/一致内边距）、数值右对齐、表头 sticky、大表折叠。
 export function TableBlockView({
   block,
+  tableNo,
   onChange
 }: {
   block: TableBlock
+  tableNo: number
   onChange: (next: TableBlock) => void
 }): React.JSX.Element {
   const { t } = useTranslation()
@@ -35,12 +40,14 @@ export function TableBlockView({
   return (
     <div className="rounded-lg border border-zinc-200 dark:border-zinc-800">
       <div className="flex items-center justify-between gap-2 border-b border-zinc-200 px-3 py-2 dark:border-zinc-800">
-        <div className="flex min-w-0 items-center gap-2">
-          <input
-            className={`${inputCls} w-56 border-transparent bg-transparent text-[13px] font-medium focus:border-blue-400`}
-            placeholder={t('doc.tableUntitled')}
+        <div className="flex min-w-0 flex-1 items-baseline gap-1">
+          <span className="shrink-0 text-[12.5px] font-semibold text-zinc-700 dark:text-zinc-200">
+            Table {tableNo}.
+          </span>
+          <InlineCaption
             value={block.name}
-            onChange={(e) => onChange({ ...block, name: e.target.value })}
+            onChange={(name) => onChange({ ...block, name })}
+            className="min-w-0 flex-1 text-[12.5px] leading-5 text-zinc-500 dark:text-zinc-400"
           />
           <span className="shrink-0 text-[11px] text-zinc-400 dark:text-zinc-500">
             {t('table.rowCount', { count: block.rows.length })}
