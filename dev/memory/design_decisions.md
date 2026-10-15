@@ -216,3 +216,15 @@
   - **文件树操作**：新建嵌套文件夹/重命名/删除（子项上移一级）/移动到（目标选择对话框）；新建实验（选目标文件夹）
   - **CSV 解析**：自研小型状态机（引号/逗号/换行），表头为列名，表格块名默认取文件名
 - **理由**：块模型贴近科研记录习惯（表格与图片穿插文本），块序列可直接序列化为 markdown（导出更顺），AI 阶段可产出块级内容回流。
+
+### [D22] 平台 AI 服务配置与应用代理调用（2026-10-15）
+
+- **背景**：开发者要求平台级 AI 配置（API Key 统一填入），满足部分应用的 AI 需求；保存时自动检测 Key 有效性；应用经平台配置使用 AI。
+- **结论**：
+  - **设置页新增「AI 服务」区**：提供商预设（DeepSeek 默认 / OpenAI / 自定义）、Base URL、模型名、API Key（密码框，留空 = 保持原 Key）
+  - **Key 安全**：Electron safeStorage（Windows DPAPI）加密后存 `ai-config.json`（与 settings.json 同级）；**明文与密文 Key 均永不下发应用**，应用仅见 available 布尔值与对话结果
+  - **保存即验证**：GET `{baseUrl}/models`（Bearer 认证，15s 超时），有效才落盘；失败提示原因且不保存
+  - **SDK 0.5.0 `sdk.ai`**（新权限 `ai`，manifest 白名单同步扩展）：
+    - `available()` → 平台是否已配置可用 Key（返回布尔）
+    - `chat(messages, { model?, temperature?, maxTokens? })` → 平台代理转发 OpenAI 兼容 `/chat/completions`（**net.fetch 走系统代理**），返回 `{ content, model, usage }`
+  - **理由**：应用沙箱不能持 Key（防外泄），平台代理是唯一合理形态；net.fetch 遵循系统代理（Node fetch 不遵循，openai 域名必须走代理）；safeStorage 是 Windows 零成本原生加密。

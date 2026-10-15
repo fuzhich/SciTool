@@ -58,6 +58,10 @@
   - 顶会排版：衬线正文（Georgia/Times/宋体 14px/1.7 行高/两端对齐/标题层级）、图注下图居中 + 表注上表 + Figure/Table 自动编号（按文档顺序）、表格格子统一（数值右对齐/tabular-nums/表头 sticky/大表折叠）
   - 直接交互：CSV/Excel/图片拖入按位置渲染、文件树拖拽移动（环防护）、点文件夹行开合、列名/图注/表注内联编辑
   - 多轮实测反馈快速迭代（迁移 bug、dragover preventDefault、contentEditable 光标怪癖等均根治）；冒烟每轮全绿
+- [x] **平台 AI 服务**（D22，SDK 0.5.0）：
+  - 设置页「AI 服务」区：提供商预设（DeepSeek/OpenAI/自定义）+ Base URL + 模型 + API Key（密码框）；**保存即验证**（GET /models，15s 超时，失败不落盘）
+  - Key 安全：safeStorage（Windows DPAPI）加密存 ai-config.json，明文/密文均不下发应用
+  - sdk.ai.available()/chat()：新 ai 权限，平台代理转发 OpenAI 兼容 /chat/completions（net.fetch 走系统代理），返回 {content, model, usage}
 
 ### 进行中
 
