@@ -90,6 +90,10 @@ export function createSdk(appId: string, invoker: SdkInvoker): Sdk {
         await invoker.invoke(SDK_CHANNELS.uiClose)
         return { ok: true }
       },
+      maximize: async (): Promise<SdkResult> => {
+        await invoker.invoke(SDK_CHANNELS.uiMaximize)
+        return { ok: true }
+      },
       saveTextFile: async (options): Promise<SdkResult<{ path: string } | null>> => {
         const res = await invoker.invoke<{ ok: boolean; data?: { path: string } | null; error?: string }>(
           SDK_CHANNELS.uiSaveTextFile,

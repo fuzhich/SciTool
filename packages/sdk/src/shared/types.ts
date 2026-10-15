@@ -1,4 +1,4 @@
-export const SDK_VERSION = '0.3.0'
+export const SDK_VERSION = '0.4.0'
 
 export type Permission =
   | 'storage'
@@ -105,6 +105,8 @@ export interface SdkUi {
   notify: (options: NotificationOptions) => Promise<SdkResult>
   minimize: () => Promise<SdkResult>
   close: () => Promise<SdkResult>
+  // SDK 0.4.0：最大化应用窗口
+  maximize: () => Promise<SdkResult>
   // SDK 0.3.0：弹原生保存对话框并写入文件；用户取消时 data 为 null
   saveTextFile: (options: SaveTextFileOptions) => Promise<SdkResult<{ path: string } | null>>
 }

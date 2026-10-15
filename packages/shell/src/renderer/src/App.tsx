@@ -213,7 +213,7 @@ export default function App(): React.JSX.Element {
       </main>
 
       <footer className="border-t border-zinc-200/80 py-4 text-center text-[11px] text-zinc-400 dark:border-zinc-800 dark:text-zinc-600">
-        SciTool Platform · SDK 0.3.0 · M4
+        SciTool Platform · SDK 0.4.0 · M4
       </footer>
 
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />

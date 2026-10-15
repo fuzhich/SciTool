@@ -205,7 +205,7 @@ const en: Dict = {
       { perm: 'storage', ability: 'sdk.storage.get / set / remove — app-private key-value storage' },
       { perm: 'settings', ability: 'sdk.settings.get / getLanguage — platform language & theme (read-only)' },
       { perm: 'log', ability: 'sdk.log — unified logging to platform logs' },
-      { perm: 'ui', ability: 'sdk.ui.notify / minimize / close / saveTextFile — notifications, window control & save dialog' },
+      { perm: 'ui', ability: 'sdk.ui.notify / minimize / maximize / close / saveTextFile — notifications, window control & save dialog' },
       {
         perm: 'sharedData',
         ability: 'sdk.sharedData.get / put / list / remove — cross-app documents (also needs domain grant)'

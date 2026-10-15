@@ -66,6 +66,11 @@ export function registerSdkServices(): void {
     return { ok: true }
   })
 
+  registerSdkHandler(SDK_CHANNELS.uiMaximize, (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.maximize()
+    return { ok: true }
+  })
+
   registerSdkHandler(SDK_CHANNELS.uiSaveTextFile, async (event, payload) => {
     const { defaultFileName, content } = payload as { defaultFileName?: string; content: string }
     if (typeof content !== 'string') throw new Error('content 非法')

@@ -14,7 +14,7 @@ function createMockSdk(): Sdk {
   const mockId = 'com.scitool.dev-guide (mock)'
 
   return {
-    version: '0.3.0',
+    version: '0.4.0',
     appId: mockId,
     storage: {
       get: async (key) => (kv.has(key) ? ok(kv.get(key) as never) : ok(null)),
@@ -36,6 +36,7 @@ function createMockSdk(): Sdk {
       notify: async () => ok(),
       minimize: async () => ok(),
       close: async () => ok(),
+      maximize: async () => ok(),
       saveTextFile: async (options) => {
         const blob = new Blob([options.content], { type: 'text/markdown' })
         const url = URL.createObjectURL(blob)
