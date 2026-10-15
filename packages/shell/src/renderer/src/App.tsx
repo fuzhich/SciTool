@@ -4,17 +4,17 @@ import type { AppRecord } from '@scitool/sdk'
 import i18n from './i18n'
 import { useAppStore } from './stores/app-store'
 import { Button } from './components/ui/button'
-import { Card } from './components/ui/card'
 import { Badge } from './components/ui/badge'
 import { SettingsModal } from './components/settings-modal'
 
-function AppIcon({ app }: { app: AppRecord }): React.JSX.Element {
+function AppIcon({ app, size = 'md' }: { app: AppRecord; size?: 'md' | 'lg' }): React.JSX.Element {
+  const cls = size === 'lg' ? 'h-16 w-16 rounded-2xl text-2xl' : 'h-12 w-12 rounded-xl text-lg'
   if (app.icon) {
     return (
       <img
         src={`scitool-app://${app.id}/${app.icon}`}
         alt=""
-        className="h-10 w-10 rounded-xl object-cover"
+        className={`${cls} object-cover`}
         onError={(e) => {
           e.currentTarget.style.display = 'none'
         }}
@@ -23,79 +23,134 @@ function AppIcon({ app }: { app: AppRecord }): React.JSX.Element {
   }
   const initial = (app.name.zh || app.name.en || '?').slice(0, 1).toUpperCase()
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-base font-semibold text-blue-600 dark:bg-blue-950/60 dark:text-blue-400">
+    <div
+      className={`flex items-center justify-center bg-blue-50 font-semibold text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 ${cls}`}
+    >
       {initial}
     </div>
   )
 }
 
-function AppCard({ app }: { app: AppRecord }): React.JSX.Element {
+function fmtDate(iso: string): string {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime())
+    ? iso
+    : `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+// 极简磁贴：仅图标 + 名称；单击选中（右侧出详情栏），双击启动
+function AppTile({
+  app,
+  selected,
+  onSelect,
+  onLaunch
+}: {
+  app: AppRecord
+  selected: boolean
+  onSelect: (id: string) => void
+  onLaunch: (app: AppRecord) => void
+}): React.JSX.Element {
+  const { i18n: i18nInst } = useTranslation()
+  const name = i18nInst.language === 'en' ? app.name.en : app.name.zh
+  return (
+    <button
+      type="button"
+      className={`flex flex-col items-center gap-2 rounded-xl border p-4 transition-colors ${
+        selected
+          ? 'border-blue-400 bg-blue-50/70 dark:border-blue-500 dark:bg-blue-950/40'
+          : 'border-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+      }`}
+      onClick={() => onSelect(app.id)}
+      onDoubleClick={() => onLaunch(app)}
+    >
+      <AppIcon app={app} />
+      <span className="w-full truncate text-center text-[12.5px] font-medium">{name}</span>
+    </button>
+  )
+}
+
+// 右侧详情侧栏：单击磁贴后出现
+function DetailPanel({
+  app,
+  onClose,
+  onLaunch,
+  onUninstall,
+  onCheckUpdate
+}: {
+  app: AppRecord
+  onClose: () => void
+  onLaunch: (app: AppRecord) => Promise<void>
+  onUninstall: (app: AppRecord) => Promise<void>
+  onCheckUpdate: (app: AppRecord) => Promise<void>
+}): React.JSX.Element {
   const { t, i18n: i18nInst } = useTranslation()
   const [busy, setBusy] = useState(false)
 
   const name = i18nInst.language === 'en' ? app.name.en : app.name.zh
   const desc = i18nInst.language === 'en' ? app.description.en : app.description.zh
 
-  const onLaunch = async (): Promise<void> => {
-    setBusy(true)
-    const res = await window.api.apps.launch(app.id)
-    setBusy(false)
-    if (!res.ok) alert(`${t('errors.launch')}: ${res.error}`)
-  }
-
-  const onUninstall = async (): Promise<void> => {
-    if (!window.confirm(t('confirmUninstall', { name }))) return
-    setBusy(true)
-    const res = await window.api.apps.uninstall(app.id)
-    setBusy(false)
-    if (!res.ok) alert(`${t('errors.uninstall')}: ${res.error}`)
-  }
-
-  const onCheckUpdate = async (): Promise<void> => {
-    setBusy(true)
-    const res = await window.api.updates.checkApp(app.id)
-    setBusy(false)
-    if (!res.ok) {
-      alert(`${t('appUpdateFailed')}: ${res.error}`)
-      return
-    }
-    const result = res.data as { updated: boolean; from: string; to?: string; reason?: string }
-    if (result.updated) {
-      alert(t('appUpdated', { name, version: result.to }))
-    } else if (result.to) {
-      alert(t('appUpdateNone', { name }))
-    } else {
-      alert(`${t('appUpdateNone', { name })}（${result.reason}）`)
+  const withBusy = (fn: (app: AppRecord) => Promise<void>): (() => void) => {
+    return () => {
+      setBusy(true)
+      void fn(app).finally(() => setBusy(false))
     }
   }
 
   return (
-    <Card className="flex flex-col gap-3 p-5">
-      <div className="flex items-start justify-between">
-        <AppIcon app={app} />
-        <Badge>v{app.version}</Badge>
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+        <h2 className="text-[13px] font-semibold">{t('details')}</h2>
+        <button
+          type="button"
+          className="rounded-md px-1.5 py-0.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+          title={t('close')}
+          onClick={onClose}
+        >
+          ✕
+        </button>
       </div>
-      <div className="min-h-0">
-        <h3 className="truncate text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">{name}</h3>
-        <p className="mt-1 line-clamp-2 text-[13px] leading-5 text-zinc-500 dark:text-zinc-400">{desc}</p>
-      </div>
-      <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-        <span className="min-w-0 truncate text-[11px] text-zinc-400 dark:text-zinc-500" title={app.id}>
-          {app.id.split('.').pop() ?? app.id}
-        </span>
-        <div className="flex shrink-0 gap-2">
-          <Button size="sm" variant="ghost" disabled={busy} onClick={onCheckUpdate}>
-            {t('appUpdateCheck')}
-          </Button>
-          <Button size="sm" variant="outline" disabled={busy} onClick={onUninstall}>
-            {t('uninstall')}
-          </Button>
-          <Button size="sm" disabled={busy} onClick={onLaunch}>
-            {t('launch')}
-          </Button>
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+        <div className="flex flex-col items-center gap-2.5 py-2 text-center">
+          <AppIcon app={app} size="lg" />
+          <div>
+            <div className="text-[15px] font-semibold">{name}</div>
+            <div className="mt-1.5">
+              <Badge>v{app.version}</Badge>
+            </div>
+          </div>
+        </div>
+        {desc && <p className="text-[12.5px] leading-5 text-zinc-500 dark:text-zinc-400">{desc}</p>}
+        {app.permissions.length > 0 && (
+          <div>
+            <div className="mb-1.5 text-[11.5px] font-medium text-zinc-400 dark:text-zinc-500">{t('permissions')}</div>
+            <div className="flex flex-wrap gap-1">
+              {app.permissions.map((p) => (
+                <Badge key={p}>{p}</Badge>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="text-[11.5px] leading-4 text-zinc-400 dark:text-zinc-500">
+          <div className="truncate" title={app.id}>
+            {app.id}
+          </div>
+          <div className="mt-0.5">
+            {t('installedAt')}: {fmtDate(app.installedAt)}
+          </div>
         </div>
       </div>
-    </Card>
+      <div className="space-y-2 border-t border-zinc-200 p-4 dark:border-zinc-800">
+        <Button className="w-full" disabled={busy} onClick={withBusy(onLaunch)}>
+          {t('launch')}
+        </Button>
+        <Button className="w-full" variant="outline" disabled={busy} onClick={withBusy(onCheckUpdate)}>
+          {t('appUpdateCheck')}
+        </Button>
+        <Button className="w-full" variant="danger" disabled={busy} onClick={withBusy(onUninstall)}>
+          {t('uninstall')}
+        </Button>
+      </div>
+    </div>
   )
 }
 
@@ -104,6 +159,8 @@ export default function App(): React.JSX.Element {
   const { apps, settings, loading, load, refreshApps, updateSettings } = useAppStore()
   const [installing, setInstalling] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selected = apps.find((a) => a.id === selectedId) ?? null
 
   useEffect(() => {
     void load()
@@ -146,6 +203,40 @@ export default function App(): React.JSX.Element {
     await updateSettings({ theme: settings.theme === 'dark' ? 'light' : 'dark' })
   }
 
+  const launchApp = async (app: AppRecord): Promise<void> => {
+    const res = await window.api.apps.launch(app.id)
+    if (!res.ok) alert(`${t('errors.launch')}: ${res.error}`)
+  }
+
+  const uninstallApp = async (app: AppRecord): Promise<void> => {
+    const name = settings.language === 'en' ? app.name.en : app.name.zh
+    if (!window.confirm(t('confirmUninstall', { name }))) return
+    const res = await window.api.apps.uninstall(app.id)
+    if (!res.ok) {
+      alert(`${t('errors.uninstall')}: ${res.error}`)
+      return
+    }
+    if (selectedId === app.id) setSelectedId(null)
+    await refreshApps()
+  }
+
+  const checkAppUpdate = async (app: AppRecord): Promise<void> => {
+    const name = settings.language === 'en' ? app.name.en : app.name.zh
+    const res = await window.api.updates.checkApp(app.id)
+    if (!res.ok) {
+      alert(`${t('appUpdateFailed')}: ${res.error}`)
+      return
+    }
+    const result = res.data as { updated: boolean; from: string; to?: string; reason?: string }
+    if (result.updated) {
+      alert(t('appUpdated', { name, version: result.to }))
+    } else if (result.to) {
+      alert(t('appUpdateNone', { name }))
+    } else {
+      alert(`${t('appUpdateNone', { name })}（${result.reason}）`)
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <header className="sticky top-0 z-10 border-b border-zinc-200/80 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
@@ -176,41 +267,60 @@ export default function App(): React.JSX.Element {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            {t('appCount', { count: apps.length })}
-          </h2>
-        </div>
-
-        {loading ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className="h-44 animate-pulse rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
-              />
-            ))}
-          </div>
-        ) : apps.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 py-28 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 text-2xl dark:bg-zinc-800">
-              📦
+      <div className="relative flex min-h-0 flex-1">
+        <main className="min-w-0 flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-6xl px-6 py-8">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                {t('appCount', { count: apps.length })}
+              </h2>
             </div>
-            <h3 className="text-[15px] font-semibold text-zinc-800 dark:text-zinc-200">{t('emptyTitle')}</h3>
-            <p className="max-w-sm text-[13px] leading-5 text-zinc-500 dark:text-zinc-400">{t('emptyDesc')}</p>
-            <Button className="mt-2" disabled={installing} onClick={onInstall}>
-              {t('install')}
-            </Button>
+
+            {loading ? (
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-28 animate-pulse rounded-xl bg-zinc-100 dark:bg-zinc-800/60" />
+                ))}
+              </div>
+            ) : apps.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-4 py-28 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 text-2xl dark:bg-zinc-800">
+                  📦
+                </div>
+                <h3 className="text-[15px] font-semibold text-zinc-800 dark:text-zinc-200">{t('emptyTitle')}</h3>
+                <p className="max-w-sm text-[13px] leading-5 text-zinc-500 dark:text-zinc-400">{t('emptyDesc')}</p>
+                <Button className="mt-2" disabled={installing} onClick={onInstall}>
+                  {t('install')}
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+                {apps.map((app) => (
+                  <AppTile
+                    key={app.id}
+                    app={app}
+                    selected={app.id === selectedId}
+                    onSelect={setSelectedId}
+                    onLaunch={launchApp}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {apps.map((app) => (
-              <AppCard key={app.id} app={app} />
-            ))}
-          </div>
+        </main>
+
+        {selected && (
+          <aside className="absolute right-0 top-0 z-20 h-full w-80 border-l border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
+            <DetailPanel
+              app={selected}
+              onClose={() => setSelectedId(null)}
+              onLaunch={launchApp}
+              onUninstall={uninstallApp}
+              onCheckUpdate={checkAppUpdate}
+            />
+          </aside>
         )}
-      </main>
+      </div>
 
       <footer className="border-t border-zinc-200/80 py-4 text-center text-[11px] text-zinc-400 dark:border-zinc-800 dark:text-zinc-600">
         SciTool Platform · SDK 0.4.0 · M4
