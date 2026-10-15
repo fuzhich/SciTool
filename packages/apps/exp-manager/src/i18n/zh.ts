@@ -41,7 +41,9 @@ const zh = {
     tableEmpty: '表格内容为空，未添加',
     moveUp: '上移',
     moveDown: '下移',
-    deleteBlock: '删除块'
+    deleteBlock: '删除块',
+    exportCsv: '导出 CSV',
+    exportImage: '导出图片'
   },
   table: {
     rowCount: '共 {{count}} 行',
@@ -67,6 +69,9 @@ const zh = {
   },
   save: {
     save: '保存',
+    exportAll: '导出全部',
+    exported: '已导出：{{path}}',
+    exportCanceled: '已取消导出',
     zoomIn: '放大',
     zoomOut: '缩小',
     zoomReset: '点击复位 100%',

@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ExpBlock, ExpDoc, ExpMeta } from '../lib/expdoc'
+import type { Sdk } from '@scitool/sdk'
 import type { ExpRepo, RepoNode } from '../lib/repo/exp-repo'
-import { Badge, btnPrimary } from '../components/ui'
+import { Badge, btnGhost, btnPrimary } from '../components/ui'
+import { exportCsv, exportDocZip, exportImage } from '../lib/export'
 import { TreePanel } from '../components/TreePanel'
 import { DocView } from '../components/DocView'
 import { MetaPanel } from '../components/MetaPanel'
 
-export function WorkspacePage({ repo }: { repo: ExpRepo }): React.JSX.Element {
+export function WorkspacePage({ sdk, repo }: { sdk: Sdk; repo: ExpRepo }): React.JSX.Element {
   const { t } = useTranslation()
   const [nodes, setNodes] = useState<RepoNode[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -138,7 +140,22 @@ export function WorkspacePage({ repo }: { repo: ExpRepo }): React.JSX.Element {
               {/* h-full（确定高度）打通高度链：父级仅 min-height 时子级百分比高度不解析，
                   文档可交互区域必须用确定高度才能铺满可视区 */}
               <div className="h-full" style={{ zoom } as React.CSSProperties}>
-                <DocView blocks={doc.blocks} onChange={updateBlocks} />
+                <DocView
+              blocks={doc.blocks}
+              onChange={updateBlocks}
+              onExportTable={(sheet, tableNo, blockName, sheetIndex, sheetName) => {
+                const base = `Table${tableNo}-${sheetName || `表${sheetIndex + 1}`}`
+                void exportCsv(sdk, sheet, base).then((r) =>
+                  showFlash(r ? `${t('save.exported', { path: r.path })}` : t('save.exportCanceled'))
+                )
+              }}
+              onExportImage={(img, figureNo) => {
+                const base = `Figure${figureNo}-${img.name || `图${figureNo}`}`
+                void exportImage(sdk, img, base).then((r) =>
+                  showFlash(r ? `${t('save.exported', { path: r.path })}` : t('save.exportCanceled'))
+                )
+              }}
+            />
               </div>
             </div>
             <MetaPanel
@@ -149,7 +166,18 @@ export function WorkspacePage({ repo }: { repo: ExpRepo }): React.JSX.Element {
             />
             <div className="absolute right-4 top-4 z-20 flex items-center gap-2.5">
               {dirty && <Badge tone="amber">{t('save.unsaved')}</Badge>}
-              {flash && <span className="text-[12px] text-zinc-400 dark:text-zinc-500">{flash}</span>}
+              {flash && <span className="max-w-80 truncate text-[12px] text-zinc-400 dark:text-zinc-500">{flash}</span>}
+              <button
+                type="button"
+                className={btnGhost}
+                onClick={() => {
+                  void exportDocZip(sdk, doc).then((r) =>
+                    showFlash(r ? `${t('save.exported', { path: r.path })}` : t('save.exportCanceled'))
+                  )
+                }}
+              >
+                {t('save.exportAll')}
+              </button>
               <button type="button" className={btnPrimary} disabled={saving || !dirty} onClick={() => void onSave()}>
                 {saving ? '…' : t('save.save')}
               </button>

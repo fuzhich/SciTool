@@ -50,7 +50,7 @@ export default function App(): React.JSX.Element {
           {t('app.sdkMissing')}
         </div>
       )}
-      {booted && repo ? <WorkspacePage repo={repo} /> : null}
+      {booted && sdk && repo ? <WorkspacePage sdk={sdk} repo={repo} /> : null}
     </div>
   )
 }

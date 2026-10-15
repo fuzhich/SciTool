@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { ExpBlock } from '../lib/expdoc'
+import type { ExpBlock, ImageBlock, TableSheet } from '../lib/expdoc'
 import { MAX_IMAGE_BYTES, createImageBlock, createTableBlock, createTextBlock } from '../lib/expdoc'
 import { parseCsv, parseXlsx } from '../lib/spreadsheet'
 import { TextBlockView } from './blocks/TextBlockView'
@@ -11,10 +11,14 @@ const SPREADSHEET_EXT = /\.(csv|xlsx|xls)$/i
 
 export function DocView({
   blocks,
-  onChange
+  onChange,
+  onExportTable,
+  onExportImage
 }: {
   blocks: ExpBlock[]
   onChange: (next: ExpBlock[]) => void
+  onExportTable?: (sheet: TableSheet, tableNo: number, blockName: string, sheetIndex: number, sheetName: string) => void
+  onExportImage?: (img: ImageBlock, figureNo: number) => void
 }): React.JSX.Element {
   const { t } = useTranslation()
   const blockRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -293,10 +297,22 @@ export function DocView({
                   />
                 )}
                 {block.kind === 'table' && (
-                  <TableBlockView block={block} tableNo={numbers[i].no} onChange={(next) => patchBlock(i, next)} />
+                  <TableBlockView
+                    block={block}
+                    tableNo={numbers[i].no}
+                    onChange={(next) => patchBlock(i, next)}
+                    onExportCsv={(sheet, sheetIndex) =>
+                      onExportTable?.(sheet, numbers[i].no, block.name, sheetIndex, sheet.name)
+                    }
+                  />
                 )}
                 {block.kind === 'image' && (
-                  <ImageBlockView block={block} figureNo={numbers[i].no} onChange={(next) => patchBlock(i, next)} />
+                  <ImageBlockView
+                    block={block}
+                    figureNo={numbers[i].no}
+                    onChange={(next) => patchBlock(i, next)}
+                    onExportImage={() => onExportImage?.(block, numbers[i].no)}
+                  />
                 )}
               </div>
             )

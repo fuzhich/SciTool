@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { ImageBlock } from '../../lib/expdoc'
 import { InlineCaption } from './InlineCaption'
 
@@ -5,12 +6,15 @@ import { InlineCaption } from './InlineCaption'
 export function ImageBlockView({
   block,
   figureNo,
-  onChange
+  onChange,
+  onExportImage
 }: {
   block: ImageBlock
   figureNo: number
   onChange: (next: ImageBlock) => void
+  onExportImage?: () => void
 }): React.JSX.Element {
+  const { t } = useTranslation()
   return (
     <div className="my-2.5 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
       <img
@@ -18,6 +22,15 @@ export function ImageBlockView({
         alt={block.caption}
         className="mx-auto max-h-96 rounded-md object-contain"
       />
+      <div className="mt-2 flex justify-end">
+        <button
+          type="button"
+          className="rounded-lg px-2 py-1 text-[11.5px] font-medium text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+          onClick={onExportImage}
+        >
+          {t('doc.exportImage')}
+        </button>
+      </div>
       <div className="mt-2.5 flex items-baseline justify-center gap-1 px-2">
         <span className="shrink-0 text-[12px] font-semibold text-zinc-700 dark:text-zinc-200">
           Figure {figureNo}.

@@ -9,6 +9,7 @@ export const SDK_CHANNELS = {
   uiClose: 'sdk:ui:close',
   uiMaximize: 'sdk:ui:maximize',
   uiSaveTextFile: 'sdk:ui:save-text-file',
+  uiSaveFile: 'sdk:ui:save-file',
   sharedDataGet: 'sdk:shared-data:get',
   sharedDataPut: 'sdk:shared-data:put',
   sharedDataList: 'sdk:shared-data:list',

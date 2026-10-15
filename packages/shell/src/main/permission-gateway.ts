@@ -13,6 +13,7 @@ const CHANNEL_PERMISSION: Record<string, Permission> = {
   [SDK_CHANNELS.uiClose]: 'ui',
   [SDK_CHANNELS.uiMaximize]: 'ui',
   [SDK_CHANNELS.uiSaveTextFile]: 'ui',
+  [SDK_CHANNELS.uiSaveFile]: 'ui',
   [SDK_CHANNELS.sharedDataGet]: 'sharedData',
   [SDK_CHANNELS.sharedDataPut]: 'sharedData',
   [SDK_CHANNELS.sharedDataList]: 'sharedData',

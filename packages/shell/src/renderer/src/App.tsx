@@ -271,7 +271,7 @@ export default function App(): React.JSX.Element {
             ))}
           </nav>
           <div className="border-t border-zinc-200 px-4 py-3 text-[11px] text-zinc-400 dark:border-zinc-800 dark:text-zinc-500">
-            SciTool Platform · SDK 0.6.0
+            SciTool Platform · SDK 0.7.0
           </div>
         </aside>
 

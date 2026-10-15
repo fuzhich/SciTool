@@ -13,11 +13,13 @@ const NUMERIC = /^-?\d+(\.\d+)?$/
 export function TableBlockView({
   block,
   tableNo,
-  onChange
+  onChange,
+  onExportCsv
 }: {
   block: TableBlock
   tableNo: number
   onChange: (next: TableBlock) => void
+  onExportCsv?: (sheet: TableSheet, sheetIndex: number) => void
 }): React.JSX.Element {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
@@ -63,6 +65,9 @@ export function TableBlockView({
           </span>
         </div>
         <div className="flex shrink-0 gap-1">
+          <button type="button" className={btnGhost} onClick={() => onExportCsv?.(sheet, sheetIndex)}>
+            {t('doc.exportCsv')}
+          </button>
           {truncated && (
             <button type="button" className={btnGhost} onClick={() => setExpanded((v) => !v)}>
               {expanded ? t('table.collapse') : t('table.expand')}

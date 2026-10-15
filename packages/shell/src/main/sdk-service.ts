@@ -148,6 +148,25 @@ export function registerSdkServices(): void {
 
   // === SDK 0.6.0: 二进制文件存储 / 网络代理 / 文件选择 ===
 
+  registerSdkHandler(SDK_CHANNELS.uiSaveFile, async (event, payload) => {
+    const { defaultFileName, dataBase64, filters } = payload as {
+      defaultFileName?: string
+      dataBase64: string
+      filters?: { name: string; extensions: string[] }[]
+    }
+    if (typeof dataBase64 !== 'string') throw new Error('dataBase64 非法')
+    const win = BrowserWindow.fromWebContents(event.sender)
+    const options: Electron.SaveDialogOptions = {
+      title: '保存文件',
+      defaultPath: defaultFileName ?? 'export.bin',
+      filters: filters && filters.length > 0 ? filters : undefined
+    }
+    const result = win ? await dialog.showSaveDialog(win, options) : await dialog.showSaveDialog(options)
+    if (result.canceled || !result.filePath) return { ok: true, data: null }
+    writeFileSync(result.filePath, Buffer.from(dataBase64, 'base64'))
+    return { ok: true, data: { path: result.filePath } }
+  })
+
   registerSdkHandler(SDK_CHANNELS.uiPickFile, async (event, payload) => {
     const filters = payload as { name: string; extensions: string[] }[] | undefined
     const win = BrowserWindow.fromWebContents(event.sender)

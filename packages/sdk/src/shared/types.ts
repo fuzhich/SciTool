@@ -1,4 +1,4 @@
-export const SDK_VERSION = '0.6.0'
+export const SDK_VERSION = '0.7.0'
 
 export type Permission =
   | 'storage'
@@ -107,6 +107,12 @@ export interface SaveTextFileOptions {
   content: string
 }
 
+export interface SaveFileOptions {
+  defaultFileName?: string
+  dataBase64: string
+  filters?: FileFilter[]
+}
+
 export interface SdkUi {
   notify: (options: NotificationOptions) => Promise<SdkResult>
   minimize: () => Promise<SdkResult>
@@ -117,6 +123,8 @@ export interface SdkUi {
   saveTextFile: (options: SaveTextFileOptions) => Promise<SdkResult<{ path: string } | null>>
   // SDK 0.6.0：弹文件选择对话框；用户取消时 data 为 null
   pickFile: (filters?: FileFilter[]) => Promise<SdkResult<PickedFile | null>>
+  // SDK 0.7.0：弹原生保存对话框写二进制文件（base64）；用户取消时 data 为 null
+  saveFile: (options: SaveFileOptions) => Promise<SdkResult<{ path: string } | null>>
 }
 
 export interface SharedDataQuery {

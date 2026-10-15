@@ -106,6 +106,13 @@ export function createSdk(appId: string, invoker: SdkInvoker): Sdk {
         )
         return res.ok ? { ok: true, data: res.data ?? null } : { ok: false, error: res.error }
       },
+      saveFile: async (options): Promise<SdkResult<{ path: string } | null>> => {
+        const res = await invoker.invoke<{ ok: boolean; data?: { path: string } | null; error?: string }>(
+          SDK_CHANNELS.uiSaveFile,
+          options
+        )
+        return res.ok ? { ok: true, data: res.data ?? null } : { ok: false, error: res.error }
+      },
       pickFile: async (filters): Promise<SdkResult<PickedFile | null>> => {
         const res = await invoker.invoke<{ ok: boolean; data?: PickedFile | null; error?: string }>(
           SDK_CHANNELS.uiPickFile,

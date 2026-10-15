@@ -43,7 +43,9 @@ const en: Dict = {
     tableEmpty: 'Table is empty, skipped',
     moveUp: 'Move up',
     moveDown: 'Move down',
-    deleteBlock: 'Delete block'
+    deleteBlock: 'Delete block',
+    exportCsv: 'Export CSV',
+    exportImage: 'Export image'
   },
   table: {
     rowCount: '{{count}} rows',
@@ -69,6 +71,9 @@ const en: Dict = {
   },
   save: {
     save: 'Save',
+    exportAll: 'Export all',
+    exported: 'Exported: {{path}}',
+    exportCanceled: 'Export canceled',
     zoomIn: 'Zoom in',
     zoomOut: 'Zoom out',
     zoomReset: 'Click to reset 100%',
