@@ -194,7 +194,8 @@ const zh = {
       { perm: 'log', ability: 'sdk.log —— 统一日志落盘' },
       { perm: 'ui', ability: 'sdk.ui.notify / minimize / maximize / close / saveTextFile —— 通知、窗口控制与文件保存对话框' },
       { perm: 'sharedData', ability: 'sdk.sharedData.get / put / list / remove —— 跨应用文档（还需域名授权）' },
-      { perm: 'events', ability: 'sdk.events.subscribe —— 域变更事件订阅（还需域名授权）' }
+      { perm: 'events', ability: 'sdk.events.subscribe —— 域变更事件订阅（还需域名授权）' },
+      { perm: 'ai', ability: 'sdk.ai.available / chat —— 经平台代理调用 AI（Key 由平台统一配置，不下发应用）' }
     ],
     troubleTitle: '常见安装 / 启动失败排查',
     troubles: [

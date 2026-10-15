@@ -210,7 +210,11 @@ const en: Dict = {
         perm: 'sharedData',
         ability: 'sdk.sharedData.get / put / list / remove — cross-app documents (also needs domain grant)'
       },
-      { perm: 'events', ability: 'sdk.events.subscribe — domain change events (also needs domain grant)' }
+      { perm: 'events', ability: 'sdk.events.subscribe — domain change events (also needs domain grant)' },
+      {
+        perm: 'ai',
+        ability: 'sdk.ai.available / chat — AI calls through the platform proxy (key configured centrally, never exposed to apps)'
+      }
     ],
     troubleTitle: 'Common install / launch failures',
     troubles: [

@@ -14,7 +14,7 @@ function createMockSdk(): Sdk {
   const mockId = 'com.scitool.exp-manager (mock)'
 
   return {
-    version: '0.4.0',
+    version: '0.5.0',
     appId: mockId,
     storage: {
       get: async (key) => (kv.has(key) ? ok(kv.get(key) as never) : ok(null)),
@@ -85,6 +85,10 @@ function createMockSdk(): Sdk {
         listeners.add(callback)
         return ok(() => listeners.delete(callback))
       }
+    },
+    ai: {
+      available: async () => ok(false),
+      chat: async () => ok({ content: '（mock AI 回复）浏览器预览模式下为模拟回复。', model: 'mock' })
     }
   }
 }
