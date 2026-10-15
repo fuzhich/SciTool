@@ -189,3 +189,17 @@
   - **DevGuide 新增「AI 提示词」页**（第五导航项）：`src/lib/dev-prompt.ts` 生成中文 markdown 任务书（角色/平台背景/硬性接入约束含 manifest 正则/SDK API 全量/开发流程/代码规范/交付完成标准/避坑清单），页面预览 + 导出。应用侧特性检测：无 `saveTextFile` 时回退浏览器 Blob 下载（mock 模式同）；minSdkVersion 保持 0.2.0 —— 示范优雅降级。
   - **默认安装 seed 机制**：打包时把 dev-guide.zip 经 extraResources 装入安装目录 `resources/default-apps/`（shell build:win 前先 `pnpm --filter @scitool/dev-guide package` 并拷贝 zip）；平台启动时 `seedDefaultApps()`：`platform_meta` 表无 `default_apps_seeded` 标记时安装该目录全部 zip 并写标记（**仅在目录存在时写标记**，失败/缺失不写以便重试）；用户卸载后不重装；dev 模式从 `packages/apps/dev-guide/dist/` 读取，缺失则跳过。冒烟模式下 seed 先行、再跑安装探针（避免同 id 并发安装）。
 - **理由**：平台内置应用走「内置包 + 一次性 seed」是 VS Code 类产品的成熟模式，meta 表已存在天然承载标记；saveTextFile 归属 `ui` 权限避免新增权限类型；DevGuide 保持 0.2.0 minSdkVersion + 特性检测，向后续应用示范「新能力可用但非必需」的兼容写法。
+
+### [D20] 实验管理应用设计（2026-10-15）
+
+- **背景**：开发者发起第二个应用「实验管理」：自有实验文档格式（解析为可视化可编辑页：设置/表格/统计图/结果/备注）、文件夹系统（按 project 组织，新建/删除/移动）、两级导出（元素 CSV/PNG + 整体 zip+md）、接口化设计为 AI 阶段预留。
+- **结论**（P12–P15 已确认）：
+  - **应用标识**：id `com.scitool.exp-manager`，名称「实验管理 / Experiments」，v1.0.0，minSdkVersion 0.2.0；permissions 全量 + sharedDomains `[{ domain: "exps", access: "write" }]`。
+  - **文档格式 expdoc v1**（JSON，接口化核心）：`{ format: "scitool-expdoc", version: 1, id, type, title, folderId, createdAt, updatedAt, settings[], tables[], images[], results[], notes }`。
+    - settings：`{id, name, value, unit}` 键值行；tables：`{id, name, columns[{id,name,unit}], rows[按列 id 键值]}`；images：`{id, name, caption, mimeType, dataBase64}`（**首期无内置统计图生成，走图片上传**，用户原话；单图上限 5MB）；results：`{id, title, content(markdown)}[]`；notes：markdown。
+    - 版本化 + `parseDoc`（parse → migrate → validate）纯函数接口；**AI 阶段 schema v2 扩展 charts[]（ECharts spec），迁移钩子已预留**。
+  - **存储后端**：sharedData 域 `exps` 虚拟文件夹树。文件夹与实验均为 sharedData 文档（kind 区分）；实验文档 id = expdoc.id；保存用 expectedRevision 乐观锁（冲突提示刷新）；任意嵌套树（folderId: string|null）；删除文件夹时子项上移一级（confirm）；移动经目标文件夹选择对话框（v1 不做拖拽）。卸载应用数据不丢（shared_docs 保留，重装恢复域名授权）。
+  - **里程碑**：M4a 文档引擎 + 编辑页（设置/表格/图片/结果/备注）；M4b 文件夹树（嵌套/新建/删除/移动）；M4c 导出（CSV 带 BOM/图片原样/zip+md+expdoc.json）+ 导入 + 平台 SDK 0.4.0 `sdk.ui.saveFile`（base64 二进制保存对话框，zip/png 导出必需）；M4e 实验类型模板体系（延后）。
+  - **技术栈**：沿用 DevGuide 示范栈 + marked（markdown 预览）；**不引入 ECharts**（首期）；JSZip 留待 M4c。
+  - **AI 接口预留**：expdoc schema 即契约（版本化+迁移）；导出 zip 内含原始 expdoc.json 供 AI 消费；导入与导出对称（AI 产出回流）；文档引擎 parse/serialize/validate/migrate 纯函数模块化，后续 AI 分析脚本作为新 pipeline 插入。
+- **理由**：上传图片替代内置图表生成大幅降低首期复杂度且满足当前诉求；虚拟文件夹零平台改动并保留平台数据层优势（事件总线/乐观锁/卸载不丢）；JSON 文档天然是 AI 可消费的接口。

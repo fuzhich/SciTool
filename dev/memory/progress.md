@@ -41,12 +41,24 @@
   - SDK 0.3.0 新增 `sdk.ui.saveTextFile({ defaultFileName, content })`：原生保存对话框写 UTF-8 文件，取消返回 data:null（ui 权限）；registerSdkHandler 改 async
   - DevGuide 新增「AI 提示词」页：中文 markdown 开发任务书（角色/平台背景/manifest 校验规则/SDK API/开发流程/规范/交付标准/避坑清单），预览 + 导出可选路径；无对话框能力回退浏览器下载（minSdkVersion 保持 0.2.0 示范优雅降级）
   - 默认安装：打包时 dev-guide.zip 经 extraResources 装入 `resources/default-apps/`（shell build:win 自动前置 package + 拷贝）；首启 seedDefaultApps 自动安装并写 platform_meta 标记，**卸载后不重装**；冒烟验证 seed 生效 + 幂等（二次运行 0 seed）
+- [x] **实验管理应用 M4a**（D20，P12–P15 已结案）：
+  - expdoc v1 文档引擎（接口化）：types/validate/migrate/factory 纯函数模块，parseDoc/serializeDoc 统一入口，版本迁移钩子预留（AI 阶段 v2 扩展 charts）
+  - 仓库层：sharedData 域 exps（文件夹/文档 kind 区分），expectedRevision 乐观锁，listNodes/移动/删除文件夹子项上移逻辑就绪
+  - 编辑页：基本信息/实验设置行/可编辑表格（列增删改+行增删）/统计图上传（≤5MB base64）/结果 markdown 块/备注 markdown（预览切换）+ 保存 dirty 提示与冲突提示
+  - Home 列表页：新建/打开/删除；i18n 双语；浏览器 mock SDK
+  - 冒烟全绿（SCITOOL_SMOKE_DOMAIN=exps：安装→启动→React 渲染→域授权→共享数据/乐观锁→事件→卸载）
 
 ### 进行中
 
-（无）
+- **M4b 实验管理文件夹树**：嵌套文件夹 UI（新建/重命名/删除子项上移/移动选择对话框），Home 页树+列表布局
 
 ### 待开发者验证
+
+**实验管理 M4a UI 测试**（zip：`packages/apps/exp-manager/dist/exp-manager.zip`）：
+
+- [ ] 应用中心安装 → 新建实验 → 编辑各分区（设置/表格列行/上传统计图/结果 markdown 预览/备注）→ 保存后返回列表 → 重新打开数据完好
+- [ ] 保存冲突提示：两窗口打开同一文档分别修改保存，后保存者应看到冲突提示
+- [ ] 暗色主题下编辑页视觉效果
 
 **DevGuide 应用 UI 测试**（构建 zip：`pnpm --filter @scitool/dev-guide package`，或直接用已构建的 `packages/apps/dev-guide/dist/dev-guide.zip`）：
 
@@ -83,3 +95,4 @@
 - 2026-10-14 会话五：M2 数据共享 + M3 打磨 + v0.1.0 发布（D15–D17）
 - 2026-10-15 会话六：第一个真实应用 DevGuide + 发版流程备忘（D18）
 - 2026-10-15 会话七：DevGuide 提示词导出 + 平台默认安装（D19，SDK 0.3.0）
+- 2026-10-15 会话八：实验管理应用 M4a——expdoc 文档引擎 + 仓库层 + 编辑页/列表页（D20）

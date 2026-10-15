@@ -3,7 +3,9 @@
 | 字段 | 内容 |
 |------|------|
 | 时间 | 2026-10-15 |
-| Hash | d7cbebf（平台）/ 4dce5c0（应用） |
-| 提交信息 | feat: SDK 0.3.0 saveTextFile + 平台默认应用 seed；DevGuide「AI 提示词」页（D19） |
-| 变更内容 | SDK 新增 sdk.ui.saveTextFile（原生保存对话框，ui 权限）；registerSdkHandler 改 async；default-apps.ts 首启 seed 机制（platform_meta 标记、卸载不重装）；electron-builder extraResources + copy-default-apps 脚本；DevGuide 导出 markdown 开发任务书（可选路径 + 浏览器下载回退） |
-| 涉及文件 | packages/sdk/*、packages/shell/src/main/{default-apps,index,permission-gateway,sdk-service}.ts、electron-builder.yml、packages/apps/dev-guide/{src/lib/dev-prompt.ts,src/pages/ExportPromptPage.tsx,src/App.tsx,src/components/Sidebar.tsx,src/i18n/*} |
+| Hash | 96fa792 |
+| 提交信息 | feat: 实验管理应用 M4a——expdoc 文档引擎 + 编辑页/列表页（D20） |
+| 变更内容 | packages/apps/exp-manager：expdoc v1 接口化文档引擎（validate/migrate/factory，AI 阶段 v2 预留）、exps 域仓库层（乐观锁/树数据）、编辑页（设置/表格/统计图上传/结果/备注）与 Home 列表页、双语 i18n、mock SDK |
+| 涉及文件 | packages/apps/exp-manager/* |
+
+> 注：本文件随「docs: 会话收尾」提交一并更新；实质变更见上方 feat 提交。
