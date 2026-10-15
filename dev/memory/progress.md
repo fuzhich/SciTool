@@ -62,6 +62,11 @@
   - 设置页「AI 服务」区：提供商预设（DeepSeek/OpenAI/自定义）+ Base URL + 模型 + API Key（密码框）；**保存即验证**（GET /models，15s 超时，失败不落盘）
   - Key 安全：safeStorage（Windows DPAPI）加密存 ai-config.json，明文/密文均不下发应用
   - sdk.ai.available()/chat()：新 ai 权限，平台代理转发 OpenAI 兼容 /chat/completions（net.fetch 走系统代理），返回 {content, model, usage}
+- [x] **论文管理 M5a**（D23）：
+  - paperdoc v1 引擎 + papers 域仓库（树/乐观锁/防环）；PDF 导入（pickFile/拖拽）→ fileStore 存储（≤50MB）
+  - 三通道元数据提取：pdfjs 内嵌元数据 → DOI 命中 Crossref 校准（两条均无需 AI）→ AI 首页文本提取候选（增强）；识别来源/失败步骤透明展示
+  - AI 开关（应用级持久化开关 + sdk.ai.available 检测），未配 Key 自动回退非 AI 路径——基本功能完全不依赖 AI；元数据可编辑 + 重新识别
+  - 冒烟全绿（papers 域）
 
 ### 进行中
 
