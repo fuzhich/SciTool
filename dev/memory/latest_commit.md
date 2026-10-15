@@ -2,8 +2,10 @@
 
 | 字段 | 内容 |
 |------|------|
-| 时间 | 2026-10-14 |
-| Hash | 8fcf3fe |
-| 提交信息 | docs: v0.1.0 发布记录（D17）——更新源上线与双草稿坑处理 |
-| 变更内容 | 记录 v0.1.0 GitHub Release 发布（安装包+latest.yml 更新源上线）、electron-builder 双草稿坑处理流程 |
-| 涉及文件 | dev/memory/design_decisions.md、dev/memory/timeline.md |
+| 时间 | 2026-10-15 |
+| Hash | （提交后回填） |
+| 提交信息 | feat: 开发指南应用 DevGuide——首个真实应用（D18） |
+| 变更内容 | 新增 packages/apps/dev-guide：React+TS+Vite+Tailwind 参考实现（四章节 + SDK 六能力演练 + 浏览器 mock SDK + zip 打包脚本）；pnpm 工作区纳入 packages/apps/* |
+| 涉及文件 | packages/apps/dev-guide/*、pnpm-workspace.yaml、pnpm-lock.yaml |
+
+> 注：本文件随「docs: 会话收尾」提交一并更新；实质变更见上方 feat 提交。

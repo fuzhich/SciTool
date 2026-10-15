@@ -30,12 +30,28 @@
   - 平台自更新：electron-updater（generic/github provider）+ 设置页检查/下载/重启安装；冒烟验证检查链路
   - 应用自更新：manifest update.url → 下载替换（先关窗口防锁）；冒烟全链路 0.2.0→0.2.1
   - 暗色主题（Tailwind v4 class 模式）+ 设置页（主题/关于/更新/数据目录）
+- [x] **发版流程备忘**：`dev/memory/release_checklist.md`（发布前检查/构建发布/双草稿处理/发布后验证，依据 D13/D17）
+- [x] **第一个真实应用：开发指南 DevGuide**（D18）：
+  - 定位：平台应用开发框架介绍 + SDK 能力现场演练，代码即后续应用的参考实现
+  - 技术栈：React 19 + TS + Vite 7 + Tailwind v4 + i18next（与平台壳同栈）；浏览器 dev 模式挂内存 mock SDK
+  - 四章节：概览与架构 / 快速开始 / SDK 六能力交互演练 / manifest 接入清单；权限全量 + devguide 域（write）
+  - 打包：vite build（base './'）→ zip 平铺；manifest 校验规则全过
+  - 冒烟全绿：安装→启动→React 渲染→SDK 探针→域名授权→共享数据/乐观锁→事件→卸载（harness 新增 SCITOOL_SMOKE_DOMAIN + 渲染探针）
 
 ### 进行中
 
 （无）
 
-### 待开发者验证（M3 测试清单）
+### 待开发者验证
+
+**DevGuide 应用 UI 测试**（构建 zip：`pnpm --filter @scitool/dev-guide package`，或直接用已构建的 `packages/apps/dev-guide/dist/dev-guide.zip`）：
+
+- [ ] 应用中心安装 dev-guide.zip → 启动，四章节浏览正常（中英文）
+- [ ] SDK 演练逐项点击：存储/设置/日志/通知/共享数据（put 后 list 可见、expectedRevision 冲突报错）/事件（订阅后写测试文档收到 created/updated）
+- [ ] 语言跟随：平台切换语言后重启应用，界面语言切换；主题跟随暗色
+- [ ] 浏览器 dev 模式抽查（mock SDK 横幅出现）：`pnpm --filter @scitool/dev-guide dev`
+
+**M3 遗留测试清单**：
 
 - [ ] 重装 M3 新安装器（覆盖安装 D:\Apps\SciTool，data 应保留）
 - [ ] 设置 → 检查更新 → 应显示「已是最新版本」（验证更新通道可达 GitHub Release v0.1.0）
@@ -45,9 +61,8 @@
 ### 待办（下一步 · M4 分发）
 
 - [ ] 远程应用市场（架构已预留：市场清单与包源解耦）
-- [ ] 第一个真实科研应用（候选：文献管理 / PDF 批注 / 写作 / 翻译）
+- [ ] 第一个真实科研应用（候选：文献管理 / PDF 批注 / 写作 / 翻译；可参考 DevGuide 的实现模式）
 - [ ] 代码签名：开发者已决定**不需要**（自用/内部分发）
-- [ ] 发版流程备忘：electron-builder 发布会产生双草稿，需按 D17 流程合并
 
 ## 历史进度
 
@@ -56,3 +71,4 @@
 - 2026-10-14 会话三：M1 实施与全链路验证（D12）
 - 2026-10-14 会话四：打包分发 + 数据目录方案（D13、D14）
 - 2026-10-14 会话五：M2 数据共享 + M3 打磨 + v0.1.0 发布（D15–D17）
+- 2026-10-15 会话六：第一个真实应用 DevGuide + 发版流程备忘（D18）

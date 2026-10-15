@@ -164,3 +164,18 @@
   - 发布方式：`GH_TOKEN=$(gh auth token) electron-builder --win --publish always`
   - **坑**：electron-builder 每次发布会创建**两个草稿** release 且文件分散其上（原因未明，疑似多次 publish 流程触发）；工作流：发布后检查 `gh api repos/fuzhich/SciTool/releases`，删除残缺草稿、保留文件齐全的并 `draft=false`，缺的资产用 `gh release upload --clobber` 补齐；**切勿用管道 head 截断发布命令输出**（SIGPIPE 会杀死上传流程）
   - **网络**：electron-updater v6 走 Electron net 模块（遵循系统代理），本机系统代理可用，更新检查应可达 GitHub；app-updater 用的 Node fetch 不遵循系统代理（子应用更新源建议选国内可达主机）
+
+### [D18] 第一个真实应用：开发指南 DevGuide（2026-10-15）
+
+- **背景**：M4 启动。开发者决定第一个真实应用为「开发指南」——介绍平台应用开发框架与接入要求，代码本身作为后续应用的参考实现；要求"像真正的应用"而非简单面板。发版流程备忘同时落地 `dev/memory/release_checklist.md`。
+- **结论**：
+  - 应用标识：id `com.scitool.dev-guide`，名称「开发指南 / DevGuide」，v1.0.0，minSdkVersion 0.2.0
+  - 技术栈（示范栈）：React 19 + TS + Vite 7 + Tailwind v4（与平台壳同栈，含完整构建链路）；i18n 用 i18next + react-i18next（平台惯例）
+  - 内容四章节：概览与架构 / 快速开始 / SDK 能力交互演练（6 能力现场调用）/ manifest 接入清单（校验规则对照 + 排查）
+  - 权限：全量 6 权限（演示全部能力）；sharedDomains 声明 `devguide`（write）——演练用域，演示事件总线自闭环
+  - 开发模式：浏览器 vite dev 时用内存 mock SDK（window.sdk 缺失时），正式运行走平台注入
+  - 打包：vite 构建（base './'，相对路径适配 file://）→ PowerShell Compress-Archive 平铺 dist/* + manifest.json → dev-guide.zip
+  - 工作区调整：pnpm-workspace.yaml 增加 `packages/apps/*`（原仅 packages/*，应用子目录未纳入 workspace）
+  - 冒烟 harness 扩展：`SCITOOL_SMOKE_DOMAIN` 环境变量（默认 papers），使共享数据探针适配任意应用的域名授权
+  - 视觉：沿用壳层 zinc 色系 + 蓝 accent + 深浅主题（.dark class），字体 Segoe UI/PingFang SC
+- **理由**：与平台同栈的参考实现最利于后续应用复制模式；manifest 即"全权限示例"；mock SDK 让应用可脱离平台在浏览器开发调试。
