@@ -1,7 +1,7 @@
 // expdoc 文档格式 v2 —— 块式渲染文档。
 // 应用与外部（导出/AI）之间的契约；格式变更走版本号升级 + migrate 钩子。
 export const EXPDOC_FORMAT = 'scitool-expdoc'
-export const EXPDOC_VERSION = 2
+export const EXPDOC_VERSION = 3
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024
 
 export interface ExpSetting {
@@ -31,12 +31,18 @@ export interface TextBlock {
   content: string
 }
 
+export interface TableSheet {
+  name: string
+  columns: ExpColumn[]
+  rows: Record<string, string>[]
+}
+
 export interface TableBlock {
   id: string
   kind: 'table'
   name: string
-  columns: ExpColumn[]
-  rows: Record<string, string>[]
+  sheets: TableSheet[]
+  activeSheet: number
 }
 
 export interface ImageBlock {

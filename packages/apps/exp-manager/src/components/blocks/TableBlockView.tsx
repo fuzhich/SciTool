@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { TableBlock } from '../../lib/expdoc'
+import type { TableBlock, TableSheet } from '../../lib/expdoc'
 import { btnGhost } from '../ui'
 import { InlineCaption } from './InlineCaption'
 
@@ -8,7 +8,8 @@ const ROW_LIMIT = 20
 const NUMERIC = /^-?\d+(\.\d+)?$/
 
 // 表格模块（顶会排版）：表注在上方（Table n. 自动编号 + 无缝内联编辑），
-// 格子统一（h-8/min-w-28/一致内边距）、数值右对齐、表头 sticky、大表折叠。
+// 多表文件显示表标签页（默认第一个，可切换）；格子统一、数值右对齐、
+// 表头 sticky、大表折叠。
 export function TableBlockView({
   block,
   tableNo,
@@ -20,23 +21,28 @@ export function TableBlockView({
 }): React.JSX.Element {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
-  const truncated = block.rows.length > ROW_LIMIT
-  const rows = expanded ? block.rows : block.rows.slice(0, ROW_LIMIT)
 
+  const sheetIndex = Math.min(Math.max(0, block.activeSheet), block.sheets.length - 1)
+  const sheet: TableSheet = block.sheets[sheetIndex] ?? { name: '', columns: [], rows: [] }
+  const truncated = sheet.rows.length > ROW_LIMIT
+  const rows = expanded ? sheet.rows : sheet.rows.slice(0, ROW_LIMIT)
+
+  const patchSheet = (next: TableSheet): void => {
+    onChange({ ...block, sheets: block.sheets.map((s, i) => (i === sheetIndex ? next : s)) })
+  }
   const patchCell = (rowIdx: number, colId: string, value: string): void => {
-    const nextRows = block.rows.map((r, i) => (i === rowIdx ? { ...r, [colId]: value } : r))
-    onChange({ ...block, rows: nextRows })
+    patchSheet({ ...sheet, rows: sheet.rows.map((r, i) => (i === rowIdx ? { ...r, [colId]: value } : r)) })
   }
   const patchColumnName = (colId: string, name: string): void => {
-    onChange({ ...block, columns: block.columns.map((c) => (c.id === colId ? { ...c, name } : c)) })
+    patchSheet({ ...sheet, columns: sheet.columns.map((c) => (c.id === colId ? { ...c, name } : c)) })
   }
   const addRow = (): void => {
     const row: Record<string, string> = {}
-    for (const c of block.columns) row[c.id] = ''
-    onChange({ ...block, rows: [...block.rows, row] })
+    for (const c of sheet.columns) row[c.id] = ''
+    patchSheet({ ...sheet, rows: [...sheet.rows, row] })
   }
   const removeRow = (idx: number): void => {
-    onChange({ ...block, rows: block.rows.filter((_, i) => i !== idx) })
+    patchSheet({ ...sheet, rows: sheet.rows.filter((_, i) => i !== idx) })
   }
   const isNumeric = (v: string): boolean => NUMERIC.test(v.trim())
 
@@ -53,7 +59,7 @@ export function TableBlockView({
             className="min-w-0 flex-1 text-[12.5px] leading-5 text-zinc-500 dark:text-zinc-400"
           />
           <span className="shrink-0 text-[11px] text-zinc-400 dark:text-zinc-500">
-            {t('table.rowCount', { count: block.rows.length })}
+            {t('table.rowCount', { count: sheet.rows.length })}
           </span>
         </div>
         <div className="flex shrink-0 gap-1">
@@ -67,11 +73,32 @@ export function TableBlockView({
           </button>
         </div>
       </div>
+
+      {block.sheets.length > 1 && (
+        <div className="flex items-center gap-1 overflow-x-auto border-b border-zinc-200 px-2 py-1 dark:border-zinc-800">
+          {block.sheets.map((s, i) => (
+            <button
+              key={i}
+              type="button"
+              className={`shrink-0 rounded-md px-2.5 py-1 text-[12px] transition-colors ${
+                i === sheetIndex
+                  ? 'bg-blue-50 font-medium text-blue-600 dark:bg-blue-950/60 dark:text-blue-400'
+                  : 'text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
+              }`}
+              title={s.name}
+              onClick={() => onChange({ ...block, activeSheet: i })}
+            >
+              {s.name || `${t('doc.sheet')} ${i + 1}`}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="max-h-96 overflow-auto">
         <table className="min-w-full text-[12.5px]">
           <thead className="sticky top-0 z-10">
             <tr>
-              {block.columns.map((c) => (
+              {sheet.columns.map((c) => (
                 <th
                   key={c.id}
                   className="whitespace-nowrap border-b border-zinc-200 bg-zinc-100 px-3 py-2 text-left font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
@@ -89,7 +116,7 @@ export function TableBlockView({
                 key={i}
                 className="border-b border-zinc-100 last:border-0 hover:bg-blue-50/40 dark:border-zinc-800/60 dark:hover:bg-blue-950/20"
               >
-                {block.columns.map((c) => (
+                {sheet.columns.map((c) => (
                   <td key={c.id} className="p-0">
                     <input
                       className={`h-8 w-full min-w-28 border-0 bg-transparent px-3 text-[12.5px] tabular-nums outline-none focus:bg-blue-50/60 dark:focus:bg-blue-950/30 ${

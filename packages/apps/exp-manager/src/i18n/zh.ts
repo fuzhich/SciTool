@@ -30,6 +30,7 @@ const zh = {
   doc: {
     emptyTitle: '未选择实验',
     emptyDesc: '从左侧选择实验文件，或点「新建实验」开始记录。',
+    sheet: '表',
     dropHint: '将 CSV / Excel / 图片拖入此处，自动渲染为表格块 / 图片块；点击空白处光标落到最近块的末尾继续输入',
     tableUntitled: '未命名表格',
     addRow: '添加行',

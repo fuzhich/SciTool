@@ -170,11 +170,11 @@ export function DocView({
           const parsed = f.name.toLowerCase().endsWith('.csv')
             ? parseCsv(await f.text())
             : parseXlsx(await f.arrayBuffer())
-          if (parsed.columns.length === 0) {
+          if (parsed.sheets.length === 0) {
             setMessage(t('doc.tableEmpty'))
             continue
           }
-          created.push(createTableBlock(f.name.replace(SPREADSHEET_EXT, ''), parsed.columns, parsed.rows))
+          created.push(createTableBlock(f.name.replace(SPREADSHEET_EXT, ''), parsed.sheets))
         } else {
           setMessage(t('doc.imageInvalid'))
         }

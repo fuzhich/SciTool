@@ -32,6 +32,7 @@ const en: Dict = {
   doc: {
     emptyTitle: 'No experiment selected',
     emptyDesc: 'Pick an experiment file on the left, or click "New experiment" to start.',
+    sheet: 'Sheet',
     dropHint: 'Drop CSV / Excel / images here to render table / image blocks; clicking empty space moves the cursor to the end of the nearest block',
     tableUntitled: 'Untitled table',
     addRow: 'Add row',

@@ -3,7 +3,7 @@ import { migrateDoc } from './migrate'
 import type { ExpDoc } from './types'
 
 export { EXPDOC_FORMAT, EXPDOC_VERSION, MAX_IMAGE_BYTES } from './types'
-export type { ExpBlock, ExpColumn, ExpDoc, ExpMeta, ExpSetting, ImageBlock, TableBlock, TextBlock } from './types'
+export type { ExpBlock, ExpColumn, ExpDoc, ExpMeta, ExpSetting, ImageBlock, TableBlock, TableSheet, TextBlock } from './types'
 export { normalizeDoc, validateDoc } from './validate'
 export { migrateDoc } from './migrate'
 export { createExpDoc, createTextBlock, createTableBlock, createImageBlock, createSetting, newId } from './factory'

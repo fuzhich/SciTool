@@ -1,4 +1,4 @@
-import { EXPDOC_FORMAT, EXPDOC_VERSION, type ExpColumn, type ExpDoc, type ImageBlock, type TableBlock, type TextBlock } from './types'
+import { EXPDOC_FORMAT, EXPDOC_VERSION, type ExpDoc, type ImageBlock, type TableBlock, type TableSheet, type TextBlock } from './types'
 
 export function newId(prefix: string): string {
   return `${prefix}-${crypto.randomUUID()}`
@@ -22,8 +22,8 @@ export function createTextBlock(content = ''): TextBlock {
   return { id: newId('txt'), kind: 'text', content }
 }
 
-export function createTableBlock(name: string, columns: ExpColumn[], rows: Record<string, string>[]): TableBlock {
-  return { id: newId('tab'), kind: 'table', name, columns, rows }
+export function createTableBlock(name: string, sheets: TableSheet[]): TableBlock {
+  return { id: newId('tab'), kind: 'table', name, sheets, activeSheet: 0 }
 }
 
 export function createImageBlock(name: string, mimeType: string, dataBase64: string): ImageBlock {

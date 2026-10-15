@@ -32,14 +32,24 @@ export function validateDoc(raw: unknown): string | null {
     if (b.kind === 'text') {
       if (!isStrArray([b.id, b.content])) return 'text 块结构非法'
     } else if (b.kind === 'table') {
-      if (typeof b.id !== 'string' || typeof b.name !== 'string' || !Array.isArray(b.columns) || !Array.isArray(b.rows)) {
+      if (
+        typeof b.id !== 'string' ||
+        typeof b.name !== 'string' ||
+        !Array.isArray(b.sheets) ||
+        typeof b.activeSheet !== 'number'
+      ) {
         return 'table 块结构非法'
       }
-      for (const c of b.columns) {
-        if (!isRecord(c) || !isStrArray([c.id, c.name, c.unit])) return '表格列结构非法'
-      }
-      for (const r of b.rows) {
-        if (!isRecord(r)) return '表格行结构非法'
+      for (const sh of b.sheets) {
+        if (!isRecord(sh) || typeof sh.name !== 'string' || !Array.isArray(sh.columns) || !Array.isArray(sh.rows)) {
+          return '表格表结构非法'
+        }
+        for (const c of sh.columns) {
+          if (!isRecord(c) || !isStrArray([c.id, c.name, c.unit])) return '表格列结构非法'
+        }
+        for (const r of sh.rows) {
+          if (!isRecord(r)) return '表格行结构非法'
+        }
       }
     } else if (b.kind === 'image') {
       if (!isStrArray([b.id, b.name, b.caption, b.mimeType, b.dataBase64])) return 'image 块结构非法'
