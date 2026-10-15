@@ -29,7 +29,7 @@ export function buildDevPrompt(sdkVersion: string): string {
 | minSdkVersion | 是 | 不高于平台 SDK 版本（当前 ${sdkVersion}），否则启动被拒 |
 | description | zh 必填 | 建议 { zh, en } 双语 |
 | entry | 是 | 入口页面相对路径（如 index.html）；路径越界（../）拒绝安装；文件必须真实存在于包内 |
-| permissions | 是 | 数组，仅允许 storage / settings / log / ui / sharedData / events / ai 七种；未知权限名拒绝安装 |
+| permissions | 是 | 数组，仅允许 storage / settings / log / ui / sharedData / events / ai / fileStore / net 九种；未知权限名拒绝安装 |
 | sharedDomains | 否 | [{ domain, access }]；domain 正则 ^[a-z][a-z0-9-]{0,63}$；access 为 read 或 write |
 | update | 否 | { url }：应用自更新清单地址，清单格式 { version, url } |
 | icon | 否 | 应用中心图标路径 |
@@ -59,6 +59,9 @@ SdkResult<T> = { ok: boolean; data?: T; error?: string }
 | 共享数据 | sharedData + 域名授权 | sdk.sharedData.get(id) / put(id, data, { domain, expectedRevision? }) / list({ domain? }) / remove(id, expectedRevision?)；文档带 revision 乐观锁，并发写必须传 expectedRevision |
 | 事件 | events + 域名授权 | sdk.events.subscribe(domain, callback) 返回退订函数；事件类型 created / updated / removed |
 | AI | ai | sdk.ai.available() 平台是否已配置 Key；sdk.ai.chat(messages, { model?, temperature?, maxTokens? }) 经平台代理调用 OpenAI 兼容服务，返回 { content, model, usage }。Key 由平台设置页统一配置，永不下发应用 |
+| 二进制文件 | fileStore | sdk.fileStore.put(name, Uint8Array) 返回文件 id；get(id) / remove(id) / list()。应用私有目录隔离，单文件 ≤50MB。PDF 等大二进制不要塞 sharedData（SQLite 文本库） |
+| 网络代理 | net | sdk.net.get(url, headers?) 经平台主进程请求，无 CORS 限制且走系统代理，返回 { status, text }。学术 API（Crossref/Semantic Scholar/arXiv）经此访问 |
+| 文件选择 | ui | sdk.ui.pickFile(filters?) 弹文件选择对话框返回 { name, data }，取消返回 null |
 
 ### 4.1 调用约定
 

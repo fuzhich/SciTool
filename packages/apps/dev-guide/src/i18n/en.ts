@@ -214,6 +214,14 @@ const en: Dict = {
       {
         perm: 'ai',
         ability: 'sdk.ai.available / chat — AI calls through the platform proxy (key configured centrally, never exposed to apps)'
+      },
+      {
+        perm: 'fileStore',
+        ability: 'sdk.fileStore.put / get / remove / list — app-private binary file storage (e.g. PDFs, ≤50MB per file)'
+      },
+      {
+        perm: 'net',
+        ability: 'sdk.net.get — network requests through the platform proxy (no CORS limits, follows system proxy)'
       }
     ],
     troubleTitle: 'Common install / launch failures',

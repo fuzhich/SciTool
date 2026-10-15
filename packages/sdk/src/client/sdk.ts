@@ -1,8 +1,11 @@
 import { SDK_CHANNELS } from '../shared/channels'
 import type {
   AiChatResult,
+  FileEntry,
   LogPayload,
+  NetResult,
   NotificationOptions,
+  PickedFile,
   PlatformLanguage,
   PlatformSettings,
   Sdk,
@@ -11,7 +14,8 @@ import type {
   SharedDataQuery,
   SharedDoc,
   SharedDocEvent,
-  StorageResult
+  StorageResult,
+  StoredFile
 } from '../shared/types'
 
 export interface SdkInvoker {
@@ -101,6 +105,13 @@ export function createSdk(appId: string, invoker: SdkInvoker): Sdk {
           options
         )
         return res.ok ? { ok: true, data: res.data ?? null } : { ok: false, error: res.error }
+      },
+      pickFile: async (filters): Promise<SdkResult<PickedFile | null>> => {
+        const res = await invoker.invoke<{ ok: boolean; data?: PickedFile | null; error?: string }>(
+          SDK_CHANNELS.uiPickFile,
+          filters
+        )
+        return res.ok ? { ok: true, data: res.data ?? null } : { ok: false, error: res.error }
       }
     },
     sharedData: {
@@ -172,6 +183,39 @@ export function createSdk(appId: string, invoker: SdkInvoker): Sdk {
             void invoker.invoke(SDK_CHANNELS.eventsUnsubscribe, { subscriptionId: subId })
           }
         }
+      }
+    },
+    fileStore: {
+      put: async (name, data): Promise<SdkResult<string>> => {
+        const res = await invoker.invoke<{ ok: boolean; data?: string; error?: string }>(
+          SDK_CHANNELS.fileStorePut,
+          { name, data }
+        )
+        return res.ok ? { ok: true, data: res.data } : { ok: false, error: res.error }
+      },
+      get: async (id): Promise<SdkResult<StoredFile | null>> => {
+        const res = await invoker.invoke<{ ok: boolean; data?: StoredFile | null; error?: string }>(
+          SDK_CHANNELS.fileStoreGet,
+          id
+        )
+        return res.ok ? { ok: true, data: res.data ?? null } : { ok: false, error: res.error }
+      },
+      remove: async (id): Promise<SdkResult> => {
+        const res = await invoker.invoke<{ ok: boolean; error?: string }>(SDK_CHANNELS.fileStoreRemove, id)
+        return res.ok ? { ok: true } : { ok: false, error: res.error }
+      },
+      list: async (): Promise<SdkResult<FileEntry[]>> => {
+        const res = await invoker.invoke<{ ok: boolean; data?: FileEntry[]; error?: string }>(SDK_CHANNELS.fileStoreList)
+        return res.ok ? { ok: true, data: res.data ?? [] } : { ok: false, error: res.error }
+      }
+    },
+    net: {
+      get: async (url, headers): Promise<SdkResult<NetResult>> => {
+        const res = await invoker.invoke<{ ok: boolean; data?: NetResult; error?: string }>(SDK_CHANNELS.netGet, {
+          url,
+          headers
+        })
+        return res.ok ? { ok: true, data: res.data } : { ok: false, error: res.error }
       }
     }
   }

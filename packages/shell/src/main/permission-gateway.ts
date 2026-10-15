@@ -20,7 +20,13 @@ const CHANNEL_PERMISSION: Record<string, Permission> = {
   [SDK_CHANNELS.eventsSubscribe]: 'events',
   [SDK_CHANNELS.eventsUnsubscribe]: 'events',
   [SDK_CHANNELS.aiAvailable]: 'ai',
-  [SDK_CHANNELS.aiChat]: 'ai'
+  [SDK_CHANNELS.aiChat]: 'ai',
+  [SDK_CHANNELS.uiPickFile]: 'ui',
+  [SDK_CHANNELS.fileStorePut]: 'fileStore',
+  [SDK_CHANNELS.fileStoreGet]: 'fileStore',
+  [SDK_CHANNELS.fileStoreRemove]: 'fileStore',
+  [SDK_CHANNELS.fileStoreList]: 'fileStore',
+  [SDK_CHANNELS.netGet]: 'net'
 }
 
 export interface AppWindowEntry {

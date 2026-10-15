@@ -14,7 +14,7 @@ function createMockSdk(): Sdk {
   const mockId = 'com.scitool.dev-guide (mock)'
 
   return {
-    version: '0.5.0',
+    version: '0.6.0',
     appId: mockId,
     storage: {
       get: async (key) => (kv.has(key) ? ok(kv.get(key) as never) : ok(null)),
@@ -46,7 +46,8 @@ function createMockSdk(): Sdk {
         a.click()
         URL.revokeObjectURL(url)
         return ok({ path: a.download })
-      }
+      },
+      pickFile: async () => ok(null)
     },
     sharedData: {
       get: async (id) => ok(docs.get(id) ?? null),
@@ -89,9 +90,35 @@ function createMockSdk(): Sdk {
     ai: {
       available: async () => ok(false),
       chat: async () => ok({ content: '（mock AI 回复）浏览器预览模式下为模拟回复。', model: 'mock' })
+    },
+    fileStore: {
+      put: async (name, data) => {
+        const id = `mock-${files.size + 1}-${name}`
+        files.set(id, { name, data })
+        return ok(id)
+      },
+      get: async (id) => ok(files.get(id) ?? null),
+      remove: async (id) => {
+        files.delete(id)
+        return ok()
+      },
+      list: async () =>
+        ok(
+          [...files.entries()].map(([id, f]) => ({
+            id,
+            name: f.name,
+            size: f.data.byteLength,
+            createdAt: new Date().toISOString()
+          }))
+        )
+    },
+    net: {
+      get: async (url) => ({ ok: false, error: `mock 模式不支持网络请求: ${url}` })
     }
   }
 }
+
+const files = new Map<string, { name: string; data: Uint8Array }>()
 
 export function getSdk(): Sdk | null {
   if (window.sdk) return window.sdk

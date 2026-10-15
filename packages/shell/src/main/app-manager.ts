@@ -9,7 +9,7 @@ import { registerAppWindow, unregisterAppWindow } from './permission-gateway'
 import { getSettings } from './settings-store'
 import { writeLog } from './logger'
 
-const KNOWN_PERMISSIONS: Permission[] = ['storage', 'settings', 'log', 'ui', 'sharedData', 'events', 'ai']
+const KNOWN_PERMISSIONS: Permission[] = ['storage', 'settings', 'log', 'ui', 'sharedData', 'events', 'ai', 'fileStore', 'net']
 const ID_PATTERN = /^[a-z0-9][a-z0-9._-]{2,63}$/
 const MAX_AUTO_RESTARTS = 1
 

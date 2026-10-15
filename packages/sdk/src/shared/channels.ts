@@ -17,7 +17,13 @@ export const SDK_CHANNELS = {
   eventsUnsubscribe: 'sdk:events:unsubscribe',
   eventsNotify: 'sdk:events:notify',
   aiAvailable: 'sdk:ai:available',
-  aiChat: 'sdk:ai:chat'
+  aiChat: 'sdk:ai:chat',
+  uiPickFile: 'sdk:ui:pick-file',
+  fileStorePut: 'sdk:file-store:put',
+  fileStoreGet: 'sdk:file-store:get',
+  fileStoreRemove: 'sdk:file-store:remove',
+  fileStoreList: 'sdk:file-store:list',
+  netGet: 'sdk:net:get'
 } as const
 
 export const SHELL_CHANNELS = {

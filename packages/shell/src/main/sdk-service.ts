@@ -1,5 +1,6 @@
 import { BrowserWindow, dialog } from 'electron'
-import { writeFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
+import { basename } from 'path'
 import { SDK_CHANNELS, type AiMessage, type LogPayload, type NotificationOptions } from '@scitool/sdk'
 import { aiAvailable, aiChat } from './ai-service'
 import { getDb } from './db'
@@ -10,6 +11,8 @@ import { writeLog } from './logger'
 import { getSharedDoc, listSharedDocs, putSharedDoc, removeSharedDoc } from './shared-data'
 import { getAppDomainAccess } from './app-registry'
 import { subscribeEvents, unsubscribeEvents } from './event-bus'
+import { getAppFile, listAppFiles, putAppFile, removeAppFile } from './file-store'
+import { netGet } from './net-service'
 
 export function registerSdkServices(): void {
   const db = getDb()
@@ -141,5 +144,48 @@ export function registerSdkServices(): void {
       options?: { model?: string; temperature?: number; maxTokens?: number }
     }
     return aiChat(messages, options)
+  })
+
+  // === SDK 0.6.0: 二进制文件存储 / 网络代理 / 文件选择 ===
+
+  registerSdkHandler(SDK_CHANNELS.uiPickFile, async (event, payload) => {
+    const filters = payload as { name: string; extensions: string[] }[] | undefined
+    const win = BrowserWindow.fromWebContents(event.sender)
+    const options: Electron.OpenDialogOptions = {
+      title: '选择文件',
+      properties: ['openFile'],
+      filters: filters && filters.length > 0 ? filters : undefined
+    }
+    const result = win ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options)
+    if (result.canceled || !result.filePaths[0]) return { ok: true, data: null }
+    const p = result.filePaths[0]
+    return { ok: true, data: { name: basename(p), data: readFileSync(p) } }
+  })
+
+  registerSdkHandler(SDK_CHANNELS.fileStorePut, (_e, payload, appId) => {
+    const { name, data } = payload as { name: string; data: Uint8Array }
+    if (typeof name !== 'string' || !name) throw new Error('文件名缺失')
+    if (!(data instanceof Uint8Array)) throw new Error('文件数据缺失')
+    return { ok: true, data: putAppFile(appId, name, data) }
+  })
+
+  registerSdkHandler(SDK_CHANNELS.fileStoreGet, (_e, payload, appId) => {
+    const id = payload as string
+    return { ok: true, data: getAppFile(appId, id) }
+  })
+
+  registerSdkHandler(SDK_CHANNELS.fileStoreRemove, (_e, payload, appId) => {
+    const id = payload as string
+    removeAppFile(appId, id)
+    return { ok: true }
+  })
+
+  registerSdkHandler(SDK_CHANNELS.fileStoreList, (_e, _payload, appId) => {
+    return { ok: true, data: listAppFiles(appId) }
+  })
+
+  registerSdkHandler(SDK_CHANNELS.netGet, (_e, payload) => {
+    const { url, headers } = payload as { url: string; headers?: Record<string, string> }
+    return netGet(url, headers)
   })
 }

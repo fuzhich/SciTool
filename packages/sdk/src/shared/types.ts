@@ -1,4 +1,4 @@
-export const SDK_VERSION = '0.5.0'
+export const SDK_VERSION = '0.6.0'
 
 export type Permission =
   | 'storage'
@@ -10,6 +10,10 @@ export type Permission =
   | 'events'
   // SDK 0.5.0：经平台代理调用 AI（Key 由平台统一配置，不下发应用）
   | 'ai'
+  // SDK 0.6.0：应用私有二进制文件存储
+  | 'fileStore'
+  // SDK 0.6.0：经平台代理发起网络请求（无 CORS 限制、走系统代理）
+  | 'net'
 
 export interface LocalizedText {
   zh: string
@@ -111,6 +115,8 @@ export interface SdkUi {
   maximize: () => Promise<SdkResult>
   // SDK 0.3.0：弹原生保存对话框并写入文件；用户取消时 data 为 null
   saveTextFile: (options: SaveTextFileOptions) => Promise<SdkResult<{ path: string } | null>>
+  // SDK 0.6.0：弹文件选择对话框；用户取消时 data 为 null
+  pickFile: (filters?: FileFilter[]) => Promise<SdkResult<PickedFile | null>>
 }
 
 export interface SharedDataQuery {
@@ -144,6 +150,46 @@ export interface SdkAi {
   chat: (messages: AiMessage[], options?: AiChatOptions) => Promise<SdkResult<AiChatResult>>
 }
 
+// === SDK 0.6.0：二进制文件存储 / 网络代理 / 文件选择 ===
+
+export interface FileEntry {
+  id: string
+  name: string
+  size: number
+  createdAt: string
+}
+
+export interface StoredFile {
+  name: string
+  data: Uint8Array
+}
+
+export interface SdkFileStore {
+  put: (name: string, data: Uint8Array) => Promise<SdkResult<string>>
+  get: (id: string) => Promise<SdkResult<StoredFile | null>>
+  remove: (id: string) => Promise<SdkResult>
+  list: () => Promise<SdkResult<FileEntry[]>>
+}
+
+export interface NetResult {
+  status: number
+  text: string
+}
+
+export interface SdkNet {
+  get: (url: string, headers?: Record<string, string>) => Promise<SdkResult<NetResult>>
+}
+
+export interface FileFilter {
+  name: string
+  extensions: string[]
+}
+
+export interface PickedFile {
+  name: string
+  data: Uint8Array
+}
+
 export interface SharedDataPutOptions {
   domain: string
   expectedRevision?: number
@@ -173,4 +219,6 @@ export interface Sdk {
     subscribe: (domain: string, callback: (event: SharedDocEvent) => void) => Promise<SdkResult<() => void>>
   }
   ai: SdkAi
+  fileStore: SdkFileStore
+  net: SdkNet
 }
