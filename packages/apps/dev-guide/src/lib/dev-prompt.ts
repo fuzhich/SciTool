@@ -1,0 +1,105 @@
+// AI 前置提示词（开发任务书）：导出为 markdown，粘贴给 AI 后再追加新应用需求。
+// 注意：模板内不使用反引号与 ${，避免转义问题；代码用缩进块呈现。
+export function buildDevPrompt(sdkVersion: string): string {
+  return `# SciTool 应用开发任务书（AI 前置提示词）
+
+> 用途：将本任务书粘贴给 AI 助手，再在其后追加你的新应用需求，即可获得符合平台约束的开发方案与可安装的应用包。
+> 适用平台：SciTool SDK ${sdkVersion}
+
+## 1. 角色与目标
+
+你是一名资深桌面应用工程师，精通 Electron 生态与前端工程。你的任务：为 SciTool 平台开发一个新应用，最终交付一个可安装、可运行、符合接入约束的 zip 应用包。开发前先通读本任务书；任何与本任务书冲突的假设一律以本任务书为准。
+
+## 2. 平台背景（一句话架构）
+
+- SciTool 是 Windows 科研工具箱平台（类 Anaconda 定位）：平台壳 + 独立应用，应用之间经平台共享数据。
+- 平台技术栈：Electron 39 + React 19 + TypeScript + Vite + Tailwind v4，pnpm monorepo。
+- 应用模型：应用 = zip 静态网页包 + manifest.json。平台负责安装（校验）、启动（独立窗口/独立进程/沙箱）、权限管控、数据服务（SQLite）、日志与更新通道。
+- 应用不得直连平台数据库，一律经 window.sdk 访问平台能力。
+
+## 3. 硬性接入约束（违反即安装失败或运行报错）
+
+### 3.1 manifest.json 校验规则（逐字段）
+
+| 字段 | 必填 | 规则 |
+|------|------|------|
+| id | 是 | 3–64 位，正则 ^[a-z0-9][a-z0-9._-]{2,63}$，反域名格式（如 com.fuzhich.paper-notes），全局唯一 |
+| name | 是 | { zh, en } 双语，均为非空字符串 |
+| version | 是 | x.y.z 语义化（正则 ^\\d+\\.\\d+\\.\\d+$） |
+| minSdkVersion | 是 | 不高于平台 SDK 版本（当前 ${sdkVersion}），否则启动被拒 |
+| description | zh 必填 | 建议 { zh, en } 双语 |
+| entry | 是 | 入口页面相对路径（如 index.html）；路径越界（../）拒绝安装；文件必须真实存在于包内 |
+| permissions | 是 | 数组，仅允许 storage / settings / log / ui / sharedData / events 六种；未知权限名拒绝安装 |
+| sharedDomains | 否 | [{ domain, access }]；domain 正则 ^[a-z][a-z0-9-]{0,63}$；access 为 read 或 write |
+| update | 否 | { url }：应用自更新清单地址，清单格式 { version, url } |
+| icon | 否 | 应用中心图标路径 |
+
+### 3.2 运行时约束
+
+- 应用是纯静态前端：无 Node API、无 require；nodeIntegration 关闭、sandbox 开启、contextIsolation 开启（平台固定，不可配置）。
+- 唯一平台交互入口：window.sdk（平台 preload 统一注入，应用不得自带 preload）。
+- 权限双闸：① manifest.permissions 白名单（IPC 通道级，未声明调用返回 permission denied）；② manifest.sharedDomains 域名授权（数据级，write 自动含 read）。
+- 中英双语：name / description 双写；UI 语言跟随 sdk.settings.getLanguage()（zh / en）。
+- 主题跟随：sdk.settings.get() 返回 theme（light / dark），根元素切换 .dark class（Tailwind v4 class 模式）。
+- 入口以 file:// 加载：构建必须 base: './' 相对路径，否则资源 404。
+- zip 结构：manifest.json 与入口/资源平铺于根目录，不得多嵌套一层目录。
+- 崩溃恢复：渲染进程崩溃平台自动重启 1 次；窗口关闭自动清理事件订阅。
+
+## 4. SDK API（全部返回 Promise<SdkResult>，不抛异常，错误进 res.error）
+
+SdkResult<T> = { ok: boolean; data?: T; error?: string }
+
+| 能力 | 权限 | API |
+|------|------|-----|
+| 标识 | — | sdk.version、sdk.appId |
+| 私有存储 | storage | sdk.storage.get(key) / set(key, value) / remove(key)；按应用隔离（SQLite kv_store），卸载清除 |
+| 平台设置 | settings | sdk.settings.get() 返回 { language, theme }；sdk.settings.getLanguage()；只读 |
+| 日志 | log | sdk.log(level, message, data?)；level 取 debug / info / warn / error；落平台日志文件 |
+| 界面 | ui | sdk.ui.notify({ title, body }) 系统通知；sdk.ui.minimize() / close() 窗口控制；sdk.ui.saveTextFile({ defaultFileName, content }) 弹原生保存对话框并写 UTF-8 文件，用户取消时 data 为 null |
+| 共享数据 | sharedData + 域名授权 | sdk.sharedData.get(id) / put(id, data, { domain, expectedRevision? }) / list({ domain? }) / remove(id, expectedRevision?)；文档带 revision 乐观锁，并发写必须传 expectedRevision |
+| 事件 | events + 域名授权 | sdk.events.subscribe(domain, callback) 返回退订函数；事件类型 created / updated / removed |
+
+### 4.1 调用约定
+
+- 每次调用检查 res.ok；res.ok === false 时读取 res.error 并展示给用户。
+- sdk.storage.get 键不存在时返回 { ok: true, data: null }，用 data === null 判断。
+- 调用未声明权限的能力会被权限网关拒绝——manifest 按需声明，不要多声明。
+
+## 5. 推荐开发流程
+
+1. 位置：monorepo 内 packages/apps/<app-id>/。
+2. 参考实现：packages/apps/dev-guide（React + TS + Vite + Tailwind + i18next，工程骨架可直接复制）。平台不强制栈，任何能产出静态文件的方案均可。
+3. 开发预览：浏览器 vite dev 时平台不在场，挂内存 mock SDK（参考 dev-guide 的 src/lib/sdk.ts），UI 所见即所得。
+4. 构建：vite build（base: './'）。
+5. 打包：manifest.json 与构建产物平铺压缩为 zip（根目录直接含 manifest.json 与入口文件）。
+6. 安装验证：平台应用中心「安装本地包」选择 zip；覆盖安装同 id 即更新。
+7. 自检：typecheck → manifest 对照 3.1 逐字段校验 → 安装 → 启动 → SDK 调用 → 卸载全链路。
+
+## 6. 代码与协作规范
+
+- 提交信息：type: 简述，type 取 feat / fix / docs / refactor / test / chore，中文简述。
+- 重大设计决策先写入 dev/memory/design_decisions.md 再实施。
+- 双语字典独立文件（i18n/zh.ts 定义结构，en.ts 对齐类型）。
+- 视觉：与平台壳一致——zinc 色系 + 蓝 accent + 深浅主题（.dark class）；字体 Segoe UI / PingFang SC。
+- 暗色主题全组件 dark: 适配；根元素按平台主题切换 .dark。
+
+## 7. 交付完成标准（必须全部满足后再交付）
+
+- [ ] npm run typecheck 通过
+- [ ] manifest 逐字段对照 3.1 校验通过
+- [ ] zh / en 双语完整（名称、描述、UI 文案）
+- [ ] zip 平铺打包成功；应用中心安装无报错
+- [ ] 启动后 window.sdk 存在且 sdk.appId 与 manifest.id 一致
+- [ ] 每个声明权限的能力均有真实调用验证；res.ok 处理正确
+- [ ] 暗色主题目验通过（平台切主题后应用跟随）
+- [ ] 卸载链路验证（应用中心卸载无残留报错）
+
+## 8. 避坑清单（来自平台实测）
+
+- vite base 忘记 './' → file:// 下资源 404。
+- zip 多嵌套一层目录 → entry 找不到，安装报「入口文件不存在」。
+- permissions 写错大小写或未知权限名 → 拒绝安装（注意是 storage 不是 Storage）。
+- 调用 sharedData / events 前未在 sharedDomains 声明该域名 → 域名拒绝。
+- put 不带 expectedRevision 会静默覆盖他人修改——并发写场景必须带。
+- 应用内 Node fetch（自更新等）不遵循系统代理，更新源需选国内可达主机。`
+}

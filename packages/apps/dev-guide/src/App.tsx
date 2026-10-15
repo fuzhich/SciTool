@@ -8,8 +8,9 @@ import { OverviewPage } from './pages/OverviewPage'
 import { QuickStartPage } from './pages/QuickStartPage'
 import { SdkPlaygroundPage } from './pages/SdkPlaygroundPage'
 import { ManifestPage } from './pages/ManifestPage'
+import { ExportPromptPage } from './pages/ExportPromptPage'
 
-export type PageKey = 'overview' | 'quickstart' | 'playground' | 'manifest'
+export type PageKey = 'overview' | 'quickstart' | 'playground' | 'manifest' | 'prompt'
 
 export default function App(): React.JSX.Element {
   const { t } = useTranslation()
@@ -60,6 +61,7 @@ export default function App(): React.JSX.Element {
             {page === 'quickstart' && <QuickStartPage />}
             {page === 'playground' && <SdkPlaygroundPage sdk={sdk} />}
             {page === 'manifest' && <ManifestPage />}
+            {page === 'prompt' && <ExportPromptPage sdk={sdk} />}
           </div>
         </main>
       </div>

@@ -6,7 +6,8 @@ const NAV: { key: PageKey; labelKey: string; icon: string }[] = [
   { key: 'overview', labelKey: 'nav.overview', icon: '📘' },
   { key: 'quickstart', labelKey: 'nav.quickstart', icon: '🚀' },
   { key: 'playground', labelKey: 'nav.playground', icon: '🧪' },
-  { key: 'manifest', labelKey: 'nav.manifest', icon: '📋' }
+  { key: 'manifest', labelKey: 'nav.manifest', icon: '📋' },
+  { key: 'prompt', labelKey: 'nav.prompt', icon: '🤖' }
 ]
 
 export function Sidebar({

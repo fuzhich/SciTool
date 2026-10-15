@@ -3,7 +3,8 @@ const zh = {
     overview: '概览与架构',
     quickstart: '快速开始',
     playground: 'SDK 演练',
-    manifest: 'manifest 清单'
+    manifest: 'manifest 清单',
+    prompt: 'AI 提示词'
   },
   app: {
     name: '开发指南',
@@ -191,7 +192,7 @@ const zh = {
       { perm: 'storage', ability: 'sdk.storage.get / set / remove —— 应用私有键值存储' },
       { perm: 'settings', ability: 'sdk.settings.get / getLanguage —— 平台语言与主题（只读）' },
       { perm: 'log', ability: 'sdk.log —— 统一日志落盘' },
-      { perm: 'ui', ability: 'sdk.ui.notify / minimize / close —— 通知与窗口控制' },
+      { perm: 'ui', ability: 'sdk.ui.notify / minimize / close / saveTextFile —— 通知、窗口控制与文件保存对话框' },
       { perm: 'sharedData', ability: 'sdk.sharedData.get / put / list / remove —— 跨应用文档（还需域名授权）' },
       { perm: 'events', ability: 'sdk.events.subscribe —— 域变更事件订阅（还需域名授权）' }
     ],
@@ -205,6 +206,21 @@ const zh = {
       '「应用要求 SDK >= x.y.z」—— 平台 SDK 版本低于 minSdkVersion，需升级平台',
       '「permission denied / 应用未获授权访问域名」—— 调用了未声明权限的能力，或访问了未授权的共享域'
     ]
+  },
+  prompt: {
+    title: 'AI 开发提示词',
+    desc: '导出一份 markdown 任务书，作为 AI 助手的「前置提示词」：粘贴给 AI 后再追加新应用需求，即可获得符合平台约束的开发方案。',
+    usageTitle: '使用方法',
+    usageItems: [
+      '点击下方「导出 .md 文件」保存任务书（可选择保存路径）',
+      '新开 AI 会话：先粘贴任务书，再描述你的应用需求',
+      '让 AI 按任务书第 7 节「交付完成标准」逐项自检'
+    ],
+    previewTitle: '内容预览',
+    btnExport: '导出 .md 文件',
+    exported: '已保存',
+    canceled: '已取消保存',
+    fallbackSaved: '当前环境无保存对话框能力，已通过浏览器下载导出'
   },
   code: {
     storage: `await sdk.storage.set('lastProject', { id: 3 })

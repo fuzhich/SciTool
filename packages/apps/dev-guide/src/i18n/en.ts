@@ -5,7 +5,8 @@ const en: Dict = {
     overview: 'Overview',
     quickstart: 'Quick Start',
     playground: 'SDK Playground',
-    manifest: 'Manifest'
+    manifest: 'Manifest',
+    prompt: 'AI Prompt'
   },
   app: {
     name: 'DevGuide',
@@ -204,7 +205,7 @@ const en: Dict = {
       { perm: 'storage', ability: 'sdk.storage.get / set / remove — app-private key-value storage' },
       { perm: 'settings', ability: 'sdk.settings.get / getLanguage — platform language & theme (read-only)' },
       { perm: 'log', ability: 'sdk.log — unified logging to platform logs' },
-      { perm: 'ui', ability: 'sdk.ui.notify / minimize / close — notifications & window control' },
+      { perm: 'ui', ability: 'sdk.ui.notify / minimize / close / saveTextFile — notifications, window control & save dialog' },
       {
         perm: 'sharedData',
         ability: 'sdk.sharedData.get / put / list / remove — cross-app documents (also needs domain grant)'
@@ -221,6 +222,21 @@ const en: Dict = {
       '"应用要求 SDK >= x.y.z" — platform SDK is lower than minSdkVersion; upgrade the platform',
       '"permission denied / 应用未获授权访问域名" — calling an undeclared capability, or accessing an ungranted shared domain'
     ]
+  },
+  prompt: {
+    title: 'AI Dev Prompt',
+    desc: 'Export a markdown brief as the "pre-prompt" for AI assistants: paste it to the AI, then append your new app requirements to get a platform-compliant development plan.',
+    usageTitle: 'How to use',
+    usageItems: [
+      'Export the brief with "Export .md" below (choose the save path)',
+      'In a fresh AI session: paste the brief first, then describe your app requirements',
+      'Ask the AI to self-check against section 7 "Acceptance criteria"'
+    ],
+    previewTitle: 'Preview',
+    btnExport: 'Export .md',
+    exported: 'Saved',
+    canceled: 'Save canceled',
+    fallbackSaved: 'No save-dialog capability in this environment — exported via browser download'
   },
   code: {
     storage: `await sdk.storage.set('lastProject', { id: 3 })
