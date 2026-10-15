@@ -47,18 +47,26 @@
   - 编辑页：基本信息/实验设置行/可编辑表格（列增删改+行增删）/统计图上传（≤5MB base64）/结果 markdown 块/备注 markdown（预览切换）+ 保存 dirty 提示与冲突提示
   - Home 列表页：新建/打开/删除；i18n 双语；浏览器 mock SDK
   - 冒烟全绿（SCITOOL_SMOKE_DOMAIN=exps：安装→启动→React 渲染→域授权→共享数据/乐观锁→事件→卸载）
+- [x] **实验管理重构：块式渲染文档 + 全屏工作区**（D21）：
+  - SDK 0.4.0 新增 `sdk.ui.maximize`（应用启动即最大化）
+  - expdoc v2 块模型：`meta`（标题/类型/设置/备注，悬浮面板）+ `blocks[]` 有序块（text 点击编辑失焦渲染 / table CSV 拖入解析 + 单元格就地编辑 / image 拖拽+上传兜底）；v1→v2 自动迁移（tables/images/results→块）
+  - 全屏两栏工作区：左侧嵌套文件夹树（新建/重命名/删除子项上移/移动到对话框），右侧文档区（拖拽按位置插入块、hover 菜单上移/下移/删块/插文本），左上角固定可折叠悬浮面板，右上保存按钮（dirty/冲突提示）
+  - 自研 CSV 状态机解析器；M4b 文件夹系统并入主布局
+  - 冒烟全绿；shell/dev-guide typecheck 同步通过
 
 ### 进行中
 
-- **M4b 实验管理文件夹树**：嵌套文件夹 UI（新建/重命名/删除子项上移/移动选择对话框），Home 页树+列表布局
+- **M4c 实验管理导出**：元素导出（表格块→CSV 带 BOM、图片块→原图）+ 整体导出（zip 打包 tables/charts + experiment.md 对应关系 + expdoc.json）；需平台 SDK `sdk.ui.saveFile`（base64 二进制保存）；导入（zip/JSON 回流）
 
 ### 待开发者验证
 
-**实验管理 M4a UI 测试**（zip：`packages/apps/exp-manager/dist/exp-manager.zip`）：
+**实验管理 v2 块式文档 UI 测试**（zip：`packages/apps/exp-manager/dist/exp-manager.zip`）：
 
-- [ ] 应用中心安装 → 新建实验 → 编辑各分区（设置/表格列行/上传统计图/结果 markdown 预览/备注）→ 保存后返回列表 → 重新打开数据完好
-- [ ] 保存冲突提示：两窗口打开同一文档分别修改保存，后保存者应看到冲突提示
-- [ ] 暗色主题下编辑页视觉效果
+- [ ] 启动即最大化；左侧树新建文件夹/子文件夹/实验，重命名/移动/删除（子项上移）正常
+- [ ] 拖入 CSV → 按位置渲染表格块；单元格就地编辑、行增删；块间插入文本（markdown 失焦渲染）
+- [ ] 拖入图片 → 图片块渲染 + 注释；5MB 限制生效
+- [ ] 悬浮面板：标题/类型/设置/备注编辑 + 折叠；保存后重开数据完好（含旧 v1 文档自动迁移）
+- [ ] 暗色主题下视觉效果；保存冲突提示（两窗口同文档）
 
 **DevGuide 应用 UI 测试**（构建 zip：`pnpm --filter @scitool/dev-guide package`，或直接用已构建的 `packages/apps/dev-guide/dist/dev-guide.zip`）：
 
@@ -96,3 +104,4 @@
 - 2026-10-15 会话六：第一个真实应用 DevGuide + 发版流程备忘（D18）
 - 2026-10-15 会话七：DevGuide 提示词导出 + 平台默认安装（D19，SDK 0.3.0）
 - 2026-10-15 会话八：实验管理应用 M4a——expdoc 文档引擎 + 仓库层 + 编辑页/列表页（D20）
+- 2026-10-15 会话九：实验管理重构——块式渲染文档 + 全屏工作区 + SDK 0.4.0 maximize（D21）
