@@ -40,3 +40,40 @@ electron-builder 每次发布可能创建**两个草稿 Release**，且资产分
 
 - **平台更新**（electron-updater v6）：走 Electron net 模块，遵循系统代理 127.0.0.1:7897，可达 GitHub。
 - **应用自更新**（app-updater，Node fetch）：**不**遵循系统代理 —— 应用 `update.url` 应选国内可达主机。
+
+## 6. 应用发布与市场更新工作流（D24）
+
+应用有新版本时，按此流程发布（用户的市场页自动出现「更新」）：
+
+### 6.1 构建应用 zip
+
+```bash
+cd packages/apps/<app>
+pnpm package        # typecheck + vite build + zip 平铺 → dist/<app>.zip
+```
+
+### 6.2 上传 zip 到 GitHub Release
+
+```bash
+# 可随平台新版本 release 一起传，也可覆盖上传到已有 release
+/d/SDK/MiniConda/envs/agent-tool/Library/bin/gh release upload <tag> \
+  packages/apps/<app>/dist/<app>.zip --clobber
+```
+
+### 6.3 更新市场清单 `apps-market.json`（仓库根）
+
+- 更新对应应用的 `version`（新版本号）与 `zipUrl`（指向新 release 资产）
+- `size` 改为新 zip 字节数（`ls -l` 查看）；`minSdkVersion` 如需要一并更新
+- 提交推送：`git add apps-market.json && git commit && git push`（必须走系统代理）
+
+### 6.4 验证
+
+- [ ] 市场页拉取的是新清单：平台 → 市场 → 该应用显示「更新 vX.Y.Z」
+- [ ] 点击更新 → 下载安装成功 → 版本号变为新值（覆盖安装，同一注册表链路）
+- [ ] 新机器验证：卸载应用 → 市场 →「安装」→ 启动正常
+
+### 注意事项
+
+- 市场清单走 raw.githubusercontent.com 直链（main 分支），**提交即生效**，无需发平台新版本
+- 平台版本更新（latest.yml）与市场更新相互独立：应用更新不需要等平台发版
+- 应用 id 不可变（注册表/数据域绑定），只升 version；破坏性 schema 变更走版本迁移钩子
