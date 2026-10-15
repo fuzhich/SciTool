@@ -18,3 +18,4 @@
 | 2026-10-15 | SDK 0.3.0（sdk.ui.saveTextFile 原生保存对话框）、DevGuide「AI 提示词」页（markdown 开发任务书导出，可选保存路径 + 浏览器下载回退）、平台默认安装 seed 机制（extraResources 内置 zip + 首启自动安装 + platform_meta 标记，卸载不重装）；冒烟验证 seed 生效与幂等 | 决策 D19、default-apps.ts | 完成 |
 | 2026-10-15 | 实验管理应用 M4a：expdoc v1 文档引擎（接口化 + 版本迁移钩子）、exps 域仓库层（乐观锁）、编辑页（设置/表格/统计图上传/结果/备注）与 Home 列表页、双语 i18n；P12–P15 决策结案；冒烟全绿 | packages/apps/exp-manager、决策 D20 | 完成 |
 | 2026-10-15 | 实验管理重构（D21）：expdoc v2 块模型（text/table/image 有序块 + meta 悬浮面板，v1 自动迁移）、全屏两栏工作区（嵌套文件夹树并入 + 拖拽插入块 + 单元格就地编辑）、SDK 0.4.0 maximize、自研 CSV 解析器；冒烟全绿 | 决策 D21 | 完成 |
+| 2026-10-15 | 实验管理修复轮：迁移 bug（v1→v2 缺 format/version 导致树加载失败）+ 面板/保存按钮固定 + Ctrl+S + 点击空白即输入 + xlsx 支持 | — | 完成 |
