@@ -214,7 +214,9 @@ export function DocView({
 
   return (
     <div
-      className={`min-h-full flex-1 cursor-text px-16 py-8 ${dragging ? 'bg-blue-50/60 dark:bg-blue-950/20' : ''}`}
+      className={`min-h-full flex-1 cursor-text bg-zinc-200/70 px-16 py-8 dark:bg-zinc-950 ${
+        dragging ? 'bg-blue-100/70 dark:bg-blue-950/40' : ''
+      }`}
       onDragOver={(e) => {
         e.preventDefault()
         setDragging(true)
@@ -226,14 +228,14 @@ export function DocView({
       onClick={onDocClick}
     >
       {blocks.length === 0 ? (
-        <div className="mx-auto w-full max-w-[1400px]">
-          <div className="pointer-events-none flex min-h-64 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 py-16 text-center dark:border-zinc-800">
+        <div className="mx-auto flex min-h-[65vh] w-full max-w-[1400px] items-center justify-center rounded-lg border border-zinc-200 bg-white px-10 py-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="pointer-events-none flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 py-16 text-center dark:border-zinc-800">
             <div className="text-2xl">📄</div>
             <p className="text-[12.5px] text-zinc-400 dark:text-zinc-500">{t('doc.dropHint')}</p>
           </div>
         </div>
       ) : (
-        <div className="mx-auto w-full max-w-[1400px]">
+        <div className="mx-auto min-h-[65vh] w-full max-w-[1400px] rounded-lg border border-zinc-200 bg-white px-10 py-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           {blocks.map((block, i) => {
             const selected = block.id === selectedId
             return (

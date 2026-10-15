@@ -191,8 +191,8 @@ app.whenReady().then(() => {
                 await wait(900)
                 res.blocksAfterDrop = blocks().length
                 res.hasTable = blocks().some((b) => b.querySelector('table'))
-                // 5) 实验信息面板可见性（全新路径）
-                await wait(300)
+                // 5) 实验信息面板可见性（全新路径；面板随文档异步加载，等待放宽）
+                await wait(800)
                 const panelTitle = Array.from(document.querySelectorAll('h3')).find(
                   (h) => (h.textContent || '').includes('实验信息') || (h.textContent || '').includes('Experiment info')
                 )
@@ -217,6 +217,8 @@ app.whenReady().then(() => {
                 } else {
                   res.panelVisible = false
                   res.panelNotFound = true
+                  res.h3texts = Array.from(document.querySelectorAll('h3')).map((h) => (h.textContent || '').slice(0, 20))
+                  res.bodyHasPanelText = document.body.innerText.includes('实验信息') || document.body.innerText.includes('Experiment info')
                 }
                 res.savedPos = localStorage.getItem('scitool-metapanel-pos')
                 return JSON.stringify(res)
