@@ -75,13 +75,52 @@ SdkResult<T> = { ok: boolean; data?: T; error?: string }
 6. 安装验证：平台应用中心「安装本地包」选择 zip；覆盖安装同 id 即更新。
 7. 自检：typecheck → manifest 对照 3.1 逐字段校验 → 安装 → 启动 → SDK 调用 → 卸载全链路。
 
-## 6. 代码与协作规范
+## 6. UI 风格规范（与平台一致）
+
+新应用 UI 必须与平台壳保持同一视觉语言。参考实现：packages/apps/dev-guide 与 packages/apps/exp-manager（可直接对照其组件写法）。
+
+### 6.1 色彩
+
+- 中性色一律用 Tailwind zinc 色阶：浅色模式页面底 zinc-50、卡片底 white、正文 zinc-900、次要文字 zinc-500/zinc-400；暗色模式页面底 zinc-950、卡片底 zinc-900、正文 zinc-100、次要文字 zinc-400/zinc-500。
+- 主色 blue-600（主按钮/选中态/链接），hover 用 blue-500；危险操作 red-500；成功 emerald-600；警告 amber-600。
+- 暗色下主色文字可用 blue-400，弱化背景用 blue-950/60 等透明度写法。
+
+### 6.2 形状与字号层级
+
+- 卡片圆角 rounded-xl（大容器）/ rounded-lg（按钮、输入框、徽章）。
+- 卡片边框：浅色 zinc-200 / 暗色 zinc-800；用 1px 边框 + 白底分区，不用重阴影。
+- 字号层级：页面标题 text-lg 半粗、区块标题 14–15px 半粗、正文 13px、辅助信息 11–12px。
+- 按钮：主按钮白字蓝底；次按钮 ghost（hover 显 zinc-100 / dark zinc-800 底）；危险按钮红字。统一 rounded-lg px-3 py-1.5 text-[12.5px]；disabled 降透明度并禁点击。
+
+### 6.3 布局
+
+- 内容区 max-w-3xl 居中 + 左右留白 px-8，纵向留白 py-6~8。
+- 页面顶部 sticky header：毛玻璃 backdrop-blur + 底部 1px 边框。
+- 表单/字段：标签 12px zinc-500；输入框统一 rounded-lg 边框样式，focus 边框转 blue-400。
+- 空状态：居中图标 + 标题 + 一句引导文案。
+
+### 6.4 暗色适配（必须）
+
+- Tailwind v4 class 模式：根元素按 sdk.settings.get() 的 theme 切换 .dark class；style.css 定义 @custom-variant dark。
+- 每个颜色类都必须写 dark: 变体，禁止只适配浅色。
+- :root / .dark 设置 color-scheme（滚动条与表单控件跟随主题）。
+
+### 6.5 字体与双语
+
+- 字体栈：'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif；等宽内容用 Consolas/monospace。
+- 中英双语：i18n/zh.ts 定义字典结构（export type Dict = typeof zh），en.ts 按类型对齐；代码示例等语言中性内容放组件常量，不进字典。
+
+### 6.6 交互细节
+
+- 可点击元素必须有 hover 反馈（transition-colors + hover 变体）与 disabled 状态。
+- 破坏性操作（删除等）先 window.confirm 确认。
+- 异步操作进行中禁用按钮并显示进行态（…）。
+
+## 6.7 代码与协作规范
 
 - 提交信息：type: 简述，type 取 feat / fix / docs / refactor / test / chore，中文简述。
 - 重大设计决策先写入 dev/memory/design_decisions.md 再实施。
-- 双语字典独立文件（i18n/zh.ts 定义结构，en.ts 对齐类型）。
-- 视觉：与平台壳一致——zinc 色系 + 蓝 accent + 深浅主题（.dark class）；字体 Segoe UI / PingFang SC。
-- 暗色主题全组件 dark: 适配；根元素按平台主题切换 .dark。
+- 文档引擎类模块（如 expdoc）保持纯函数接口（parse/serialize/validate/migrate），外部与 AI 只经统一入口。
 
 ## 7. 交付完成标准（必须全部满足后再交付）
 
@@ -92,6 +131,7 @@ SdkResult<T> = { ok: boolean; data?: T; error?: string }
 - [ ] 启动后 window.sdk 存在且 sdk.appId 与 manifest.id 一致
 - [ ] 每个声明权限的能力均有真实调用验证；res.ok 处理正确
 - [ ] 暗色主题目验通过（平台切主题后应用跟随）
+- [ ] UI 风格对照第 6 节目验（zinc 色系 / 圆角层级 / 暗色全适配 / 双语）
 - [ ] 卸载链路验证（应用中心卸载无残留报错）
 
 ## 8. 避坑清单（来自平台实测）
