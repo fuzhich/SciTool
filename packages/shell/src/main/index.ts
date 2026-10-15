@@ -83,6 +83,7 @@ app.whenReady().then(() => {
   })
 
   const smokeZip = process.env['SCITOOL_SMOKE_ZIP']
+  const smokeDomain = process.env['SCITOOL_SMOKE_DOMAIN'] ?? 'papers'
   if (smokeZip) {
     void (async () => {
       try {
@@ -96,7 +97,7 @@ app.whenReady().then(() => {
         setTimeout(async () => {
           try {
             const probe = await win.webContents.executeJavaScript(
-              `JSON.stringify({ sdkType: typeof window.sdk, appId: window.sdk ? window.sdk.appId : null })`
+              `JSON.stringify({ sdkType: typeof window.sdk, appId: window.sdk ? window.sdk.appId : null, rootChildren: document.getElementById('root') ? document.getElementById('root').children.length : -1 })`
             )
             writeLog('smoke', 'info', `probe: ${probe}`)
           } catch (err) {
@@ -106,7 +107,7 @@ app.whenReady().then(() => {
         setTimeout(async () => {
           try {
             await win.webContents.executeJavaScript(
-              `window.sdk.events.subscribe('papers', (e) => { (window.__evtLog = window.__evtLog || []).push(e.type + ':' + e.doc.id) }).then(() => { window.__subOk = true })`
+              `window.sdk.events.subscribe('${smokeDomain}', (e) => { (window.__evtLog = window.__evtLog || []).push(e.type + ':' + e.doc.id) }).then(() => { window.__subOk = true })`
             )
             writeLog('smoke', 'info', 'shared events subscribed')
           } catch (err) {
@@ -116,10 +117,10 @@ app.whenReady().then(() => {
         setTimeout(async () => {
           try {
             const sharedProbe = await win.webContents.executeJavaScript(`(async () => {
-              const put = await window.sdk.sharedData.put('papers/smoke-1', { hello: 'world' }, { domain: 'papers' })
-              const get = await window.sdk.sharedData.get('papers/smoke-1')
-              const conflict = await window.sdk.sharedData.put('papers/smoke-1', { x: 1 }, { domain: 'papers', expectedRevision: 99 })
-              const list = await window.sdk.sharedData.list({ domain: 'papers' })
+              const put = await window.sdk.sharedData.put('${smokeDomain}/smoke-1', { hello: 'world' }, { domain: '${smokeDomain}' })
+              const get = await window.sdk.sharedData.get('${smokeDomain}/smoke-1')
+              const conflict = await window.sdk.sharedData.put('${smokeDomain}/smoke-1', { x: 1 }, { domain: '${smokeDomain}', expectedRevision: 99 })
+              const list = await window.sdk.sharedData.list({ domain: '${smokeDomain}' })
               await window.sdk.storage.set('smoke', 1)
               const sget = await window.sdk.storage.get('smoke')
               return JSON.stringify({ putRev: put.ok ? put.data.revision : put.error, getData: get.ok ? get.data.data : get.error, conflictErr: conflict.error, count: list.ok ? list.data.length : -1, storage: sget.ok ? sget.data : sget.error })
