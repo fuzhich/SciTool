@@ -252,3 +252,14 @@
   - **无 AI 降级路径**：PDF 导入后自动走「pdfjs 内嵌元数据（Title/Author/DOI）→ DOI 有则 Crossref 权威校准 → 无 DOI 则留空待手填」——导入/树/命名/手填元数据等基本功能完全不依赖 AI
   - **AI 增强路径**（开关开）：内嵌元数据缺失时，解析首页文本交 AI 提取 {title, doi} 候选 → Crossref 校准 → 回填
 - **理由**：基本功能可用性是底线（用户原话）；AI 只是增强层。
+
+### [D24] 应用市场：GitHub 清单 + Release 资产（2026-10-15）
+
+- **背景**：开发者确认应用生态是平台核心，SciTool 本体应有应用市场，直接访问其 GitHub 仓库安装应用；已确认 GitHub 存储无压力（仓库单文件 100MB、Release 资产单文件 2GB）。
+- **结论**：
+  - **市场清单 apps-market.json**：提交在仓库根（main 分支），市场页经 raw.githubusercontent.com 直链拉取（无 API 速率限制）；清单含 id/双语名称/描述/版本/minSdkVersion/zipUrl/size，zipUrl 指向 Release 资产（版本锚定）
+  - **平台市场服务**（纯平台侧，不动 SDK）：主进程 market-service.ts——清单拉取（net.fetch 走系统代理）+ zip 下载到临时目录 + 复用 installApp 校验链路；shell 通道 marketFetch/marketInstall
+  - **市场页 UI**：应用中心加「市场」标签页——应用列表（名称/描述/版本/大小）+ 状态（未安装→安装 / 有新版→更新 / 最新→打开）；安装后广播刷新
+  - **版本比较**：复用 compareVersions；市场安装 = 覆盖安装（同一注册表链路）
+  - **清单维护**：每次发版更新清单 zipUrl 至新 release
+- **理由**：raw 直链免 API 限流且「永远指向 main 最新」；zip 走 Release 资产不膨胀仓库；清单与包源解耦（D11 预留）支持未来应用分散到独立仓库。

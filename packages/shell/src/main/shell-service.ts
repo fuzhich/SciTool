@@ -5,6 +5,8 @@ import { installApp, launchApp, listApps, pickZipPath, uninstallApp } from './ap
 import { getSettings, updateSettings } from './settings-store'
 import { getApiKey, loadAiConfig, saveAiConfig } from './ai-config'
 import { validateAiConfig } from './ai-service'
+import { fetchMarketManifest, installMarketApp } from './market-service'
+import type { MarketApp } from '../shared/market'
 import { moveDataDir } from './data-dir'
 import {
   checkForUpdates,
@@ -168,6 +170,23 @@ export function registerShellServices(): void {
       if (!key) throw new Error('请先填入 API Key')
       await validateAiConfig({ baseUrl: patch.baseUrl, apiKey: key })
       saveAiConfig(patch)
+    })
+  })
+
+  ipcMain.handle(SHELL_CHANNELS.marketFetch, (event) => {
+    if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
+    return wrap(() => fetchMarketManifest())
+  })
+
+  ipcMain.handle(SHELL_CHANNELS.marketInstall, (event, app: unknown) => {
+    if (!isShellSender(event)) return { ok: false, error: 'forbidden' }
+    return wrap(async () => {
+      const target = app as MarketApp
+      if (!target || typeof target.id !== 'string' || typeof target.zipUrl !== 'string') {
+        throw new Error('市场应用信息缺失')
+      }
+      await installMarketApp(target)
+      broadcastAppsChanged()
     })
   })
 }

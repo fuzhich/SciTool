@@ -6,6 +6,7 @@ import { useAppStore } from './stores/app-store'
 import { Button } from './components/ui/button'
 import { Badge } from './components/ui/badge'
 import { SettingsModal } from './components/settings-modal'
+import { MarketView } from './components/market-view'
 
 function AppIcon({ app, size = 'md' }: { app: AppRecord; size?: 'md' | 'lg' }): React.JSX.Element {
   const cls = size === 'lg' ? 'h-16 w-16 rounded-2xl text-2xl' : 'h-12 w-12 rounded-xl text-lg'
@@ -160,6 +161,7 @@ export default function App(): React.JSX.Element {
   const [installing, setInstalling] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [view, setView] = useState<'apps' | 'market'>('apps')
   const selected = apps.find((a) => a.id === selectedId) ?? null
 
   useEffect(() => {
@@ -251,6 +253,26 @@ export default function App(): React.JSX.Element {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <div className="flex rounded-lg bg-zinc-100 p-0.5 dark:bg-zinc-800">
+              <button
+                type="button"
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  view === 'apps' ? 'bg-white text-zinc-800 shadow-sm dark:bg-zinc-900 dark:text-zinc-100' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'
+                }`}
+                onClick={() => setView('apps')}
+              >
+                {t('appsTab')}
+              </button>
+              <button
+                type="button"
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  view === 'market' ? 'bg-white text-zinc-800 shadow-sm dark:bg-zinc-900 dark:text-zinc-100' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'
+                }`}
+                onClick={() => setView('market')}
+              >
+                {t('market')}
+              </button>
+            </div>
             <Button size="sm" variant="ghost" onClick={toggleLanguage}>
               {settings.language === 'zh' ? 'EN' : '中文'}
             </Button>
@@ -268,6 +290,11 @@ export default function App(): React.JSX.Element {
       </header>
 
       <div className="relative flex min-h-0 flex-1">
+        {view === 'market' ? (
+          <main className="min-w-0 flex-1 overflow-y-auto">
+            <MarketView onLaunch={launchApp} />
+          </main>
+        ) : (
         <main className="min-w-0 flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-6xl px-6 py-8">
             <div className="mb-6 flex items-center justify-between">
@@ -308,8 +335,9 @@ export default function App(): React.JSX.Element {
             )}
           </div>
         </main>
+        )}
 
-        {selected && (
+        {view === 'apps' && selected && (
           <aside className="absolute right-0 top-0 z-20 h-full w-80 border-l border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
             <DetailPanel
               app={selected}

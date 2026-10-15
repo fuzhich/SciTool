@@ -47,6 +47,12 @@ const api = {
       apiKey?: string
     }): Promise<SdkResult> => ipcRenderer.invoke(SHELL_CHANNELS.aiConfigSet, patch)
   },
+  market: {
+    fetch: (): Promise<SdkResult<import('../shared/market').MarketManifest>> =>
+      ipcRenderer.invoke(SHELL_CHANNELS.marketFetch),
+    install: (app: import('../shared/market').MarketApp): Promise<SdkResult> =>
+      ipcRenderer.invoke(SHELL_CHANNELS.marketInstall, app)
+  },
   onAppsChanged: (callback: (apps: AppRecord[]) => void): (() => void) => {
     const listener = (_e: Electron.IpcRendererEvent, apps: AppRecord[]): void => callback(apps)
     ipcRenderer.on(SHELL_CHANNELS.onAppsChanged, listener)

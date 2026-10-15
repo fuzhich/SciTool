@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "apps": [
+    {
+      "id": "com.scitool.dev-guide",
+      "name": { "zh": "开发指南", "en": "DevGuide" },
+      "description": {
+        "zh": "SciTool 应用开发指南：平台框架介绍、SDK 演练与 AI 开发任务书导出",
+        "en": "SciTool app development guide: framework intro, SDK playground and AI dev-prompt export"
+      },
+      "version": "1.0.0",
+      "minSdkVersion": "0.2.0",
+      "zipUrl": "https://github.com/fuzhich/SciTool/releases/download/v0.2.0/dev-guide.zip",
+      "size": 113040
+    },
+    {
+      "id": "com.scitool.exp-manager",
+      "name": { "zh": "实验管理", "en": "Experiments" },
+      "description": {
+        "zh": "块式渲染实验文档：表格/统计图/文本自由编排、顶会排版与自动编号、项目文件夹树",
+        "en": "Block-based experiment docs: tables/figures/text, conference-style typography, project folder tree"
+      },
+      "version": "1.0.0",
+      "minSdkVersion": "0.4.0",
+      "zipUrl": "https://github.com/fuzhich/SciTool/releases/download/v0.2.0/exp-manager.zip",
+      "size": 229517
+    },
+    {
+      "id": "com.scitool.papers",
+      "name": { "zh": "论文管理", "en": "Papers" },
+      "description": {
+        "zh": "文件树管理论文，PDF 导入自动识别元数据（AI 增强 + 学术 API 校准）",
+        "en": "Organize papers in a tree; auto-extract metadata from imported PDFs (AI + scholarly API)"
+      },
+      "version": "1.0.0",
+      "minSdkVersion": "0.6.0",
+      "zipUrl": "https://github.com/fuzhich/SciTool/releases/download/v0.2.0/papers.zip",
+      "size": 602977
+    }
+  ]
+}
