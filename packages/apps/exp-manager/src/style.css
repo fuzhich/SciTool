@@ -43,6 +43,29 @@ body,
   background-clip: content-box;
 }
 
+/* 透明 textarea 覆盖层：与 textarea 保持逐行对齐 */
+.doc-overlay .markdown-body p,
+.doc-overlay .markdown-body h1,
+.doc-overlay .markdown-body h2,
+.doc-overlay .markdown-body h3,
+.doc-overlay .markdown-body ul,
+.doc-overlay .markdown-body ol,
+.doc-overlay .markdown-body pre,
+.doc-overlay .markdown-body blockquote {
+  margin: 0;
+}
+
+.doc-overlay .markdown-body p {
+  text-align: left;
+}
+
+/* 正文块内标题保持等字号（仅加粗），避免渲染层与 textarea 纵向漂移 */
+.doc-overlay .markdown-body h1,
+.doc-overlay .markdown-body h2,
+.doc-overlay .markdown-body h3 {
+  font-size: 1em;
+}
+
 /* 正文排版（顶会风格）：衬线字体 14px / 1.7 行高，段落两端对齐 */
 .doc-serif {
   font-family:

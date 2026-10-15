@@ -271,8 +271,7 @@ export function DocView({
                 {block.kind === 'text' && (
                   <TextBlockView
                     block={block}
-                    initialEditing={block.id === autoEditId}
-                    focusEndSignal={block.id === focusEndId}
+                    focusSignal={block.id === autoEditId || block.id === focusEndId}
                     onChange={(content) => patchBlock(i, { ...block, content })}
                     onEnterNewBlock={() => {
                       const nb = createTextBlock()
@@ -284,7 +283,10 @@ export function DocView({
                     onBackspaceEmpty={() => onBackspaceEmpty(i)}
                     onBackspaceStart={() => mergeWithPrev(i)}
                     onDeleteEnd={() => mergeWithNext(i)}
-                    onFocusEndDone={() => setFocusEndId(null)}
+                    onFocusDone={() => {
+                      setAutoEditId(null)
+                      setFocusEndId(null)
+                    }}
                   />
                 )}
                 {block.kind === 'table' && (
