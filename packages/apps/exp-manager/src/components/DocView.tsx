@@ -2,11 +2,12 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ExpBlock } from '../lib/expdoc'
 import { MAX_IMAGE_BYTES, createImageBlock, createTableBlock, createTextBlock } from '../lib/expdoc'
-import { parseCsv } from '../lib/csv'
-import { btnGhost } from './ui'
+import { parseCsv, parseXlsx } from '../lib/spreadsheet'
 import { TextBlockView } from './blocks/TextBlockView'
 import { TableBlockView } from './blocks/TableBlockView'
 import { ImageBlockView } from './blocks/ImageBlockView'
+
+const SPREADSHEET_EXT = /\.(csv|xlsx|xls)$/i
 
 export function DocView({
   blocks,
@@ -19,6 +20,7 @@ export function DocView({
   const blockRefs = useRef<(HTMLDivElement | null)[]>([])
   const [dragging, setDragging] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [autoEditId, setAutoEditId] = useState<string | null>(null)
 
   const patchBlock = (index: number, next: ExpBlock): void => {
     onChange(blocks.map((b, i) => (i === index ? next : b)))
@@ -34,10 +36,29 @@ export function DocView({
   const removeBlock = (index: number): void => {
     onChange(blocks.filter((_, i) => i !== index))
   }
-  const insertTextAfter = (index: number): void => {
+
+  // 依据鼠标 Y 坐标计算插入位置（块中点比较）
+  const indexAt = (clientY: number): number => {
+    for (let i = 0; i < blockRefs.current.length; i++) {
+      const el = blockRefs.current[i]
+      if (el) {
+        const rect = el.getBoundingClientRect()
+        if (clientY < rect.top + rect.height / 2) return i
+      }
+    }
+    return blocks.length
+  }
+
+  // 点击空白处：在对应位置插入文本块并直接进入编辑
+  const onDocClick = (e: React.MouseEvent): void => {
+    const target = e.target as HTMLElement
+    if (target.closest('[data-block]')) return
+    const index = indexAt(e.clientY)
+    const block = createTextBlock()
     const next = [...blocks]
-    next.splice(index + 1, 0, createTextBlock())
+    next.splice(index, 0, block)
     onChange(next)
+    setAutoEditId(block.id)
   }
 
   const onDrop = (e: React.DragEvent): void => {
@@ -45,17 +66,7 @@ export function DocView({
     setDragging(false)
     const files = Array.from(e.dataTransfer.files ?? [])
     if (files.length === 0) return
-    let index = blocks.length
-    for (let i = 0; i < blockRefs.current.length; i++) {
-      const el = blockRefs.current[i]
-      if (el) {
-        const rect = el.getBoundingClientRect()
-        if (e.clientY < rect.top + rect.height / 2) {
-          index = i
-          break
-        }
-      }
-    }
+    const index = indexAt(e.clientY)
     void (async () => {
       const created: ExpBlock[] = []
       for (const f of files) {
@@ -71,14 +82,15 @@ export function DocView({
             reader.readAsDataURL(f)
           })
           created.push(createImageBlock(f.name.replace(/\.[^.]+$/, ''), f.type || 'image/png', dataBase64))
-        } else if (f.name.toLowerCase().endsWith('.csv')) {
-          const text = await f.text()
-          const parsed = parseCsv(text)
+        } else if (SPREADSHEET_EXT.test(f.name)) {
+          const parsed = f.name.toLowerCase().endsWith('.csv')
+            ? parseCsv(await f.text())
+            : parseXlsx(await f.arrayBuffer())
           if (parsed.columns.length === 0) {
-            setMessage(t('doc.imageInvalid'))
+            setMessage(t('doc.tableEmpty'))
             continue
           }
-          created.push(createTableBlock(f.name.replace(/\.csv$/i, ''), parsed.columns, parsed.rows))
+          created.push(createTableBlock(f.name.replace(SPREADSHEET_EXT, ''), parsed.columns, parsed.rows))
         } else {
           setMessage(t('doc.imageInvalid'))
         }
@@ -97,7 +109,7 @@ export function DocView({
 
   return (
     <div
-      className={`min-h-full flex-1 px-16 py-8 ${dragging ? 'bg-blue-50/60 dark:bg-blue-950/20' : ''}`}
+      className={`min-h-full flex-1 cursor-text px-16 py-8 ${dragging ? 'bg-blue-50/60 dark:bg-blue-950/20' : ''}`}
       onDragOver={(e) => {
         e.preventDefault()
         setDragging(true)
@@ -106,9 +118,10 @@ export function DocView({
         if (e.currentTarget === e.target) setDragging(false)
       }}
       onDrop={onDrop}
+      onClick={onDocClick}
     >
       {blocks.length === 0 ? (
-        <div className="flex min-h-64 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 py-16 text-center dark:border-zinc-800">
+        <div className="pointer-events-none flex min-h-64 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 py-16 text-center dark:border-zinc-800">
           <div className="text-2xl">📄</div>
           <p className="text-[12.5px] text-zinc-400 dark:text-zinc-500">{t('doc.dropHint')}</p>
         </div>
@@ -117,6 +130,7 @@ export function DocView({
           {blocks.map((block, i) => (
             <div
               key={block.id}
+              data-block
               ref={(el) => {
                 blockRefs.current[i] = el
               }}
@@ -129,25 +143,21 @@ export function DocView({
                 <button type="button" className={menuCls} title={t('doc.moveDown')} onClick={() => moveBlock(i, 1)}>
                   ↓
                 </button>
-                <button type="button" className={menuCls} title={t('doc.insertTextAfter')} onClick={() => insertTextAfter(i)}>
-                  ＋
-                </button>
                 <button type="button" className={menuCls} title={t('doc.deleteBlock')} onClick={() => removeBlock(i)}>
                   ✕
                 </button>
               </div>
-              {block.kind === 'text' && <TextBlockView block={block} onChange={(content) => patchBlock(i, { ...block, content })} />}
-              {block.kind === 'table' && (
-                <TableBlockView block={block} onChange={(next) => patchBlock(i, next)} />
+              {block.kind === 'text' && (
+                <TextBlockView
+                  block={block}
+                  initialEditing={block.id === autoEditId}
+                  onChange={(content) => patchBlock(i, { ...block, content })}
+                />
               )}
-              {block.kind === 'image' && (
-                <ImageBlockView block={block} onChange={(next) => patchBlock(i, next)} />
-              )}
+              {block.kind === 'table' && <TableBlockView block={block} onChange={(next) => patchBlock(i, next)} />}
+              {block.kind === 'image' && <ImageBlockView block={block} onChange={(next) => patchBlock(i, next)} />}
             </div>
           ))}
-          <button type="button" className={`${btnGhost} w-full`} onClick={() => onChange([...blocks, createTextBlock()])}>
-            {t('doc.addTextEnd')}
-          </button>
         </div>
       )}
       {message && <p className="mt-3 text-center text-[12px] text-red-500 dark:text-red-400">{message}</p>}

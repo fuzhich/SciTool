@@ -5,13 +5,15 @@ import type { TextBlock } from '../../lib/expdoc'
 
 export function TextBlockView({
   block,
+  initialEditing = false,
   onChange
 }: {
   block: TextBlock
+  initialEditing?: boolean
   onChange: (content: string) => void
 }): React.JSX.Element {
   const { t } = useTranslation()
-  const [editing, setEditing] = useState(false)
+  const [editing, setEditing] = useState(initialEditing)
   const taRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {

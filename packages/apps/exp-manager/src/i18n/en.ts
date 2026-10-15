@@ -32,21 +32,19 @@ const en: Dict = {
   doc: {
     emptyTitle: 'No experiment selected',
     emptyDesc: 'Pick an experiment file on the left, or click "New experiment" to start.',
-    dropHint: 'Drop CSV / images here to render table / image blocks',
+    dropHint: 'Drop CSV / Excel / images here to render table / image blocks; click empty space to start typing',
     textPlaceholder: 'Write here, markdown supported…',
-    addText: 'Insert text',
-    addTextEnd: '+ Insert text at the end',
     tableUntitled: 'Untitled table',
     addRow: 'Add row',
     delRow: 'Del row',
     upload: 'Upload image',
     imageTooBig: 'Image exceeds the 5MB limit, skipped',
-    imageInvalid: 'Only CSV and image files are supported',
+    imageInvalid: 'Only CSV, Excel and image files are supported',
+    tableEmpty: 'Table is empty, skipped',
     imageCaption: 'Image caption…',
     moveUp: 'Move up',
     moveDown: 'Move down',
-    deleteBlock: 'Delete block',
-    insertTextAfter: 'Insert text below'
+    deleteBlock: 'Delete block'
   },
   panel: {
     expand: 'Experiment info',

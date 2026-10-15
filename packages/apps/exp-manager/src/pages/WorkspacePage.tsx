@@ -91,6 +91,18 @@ export function WorkspacePage({ repo }: { repo: ExpRepo }): React.JSX.Element {
     }
   }
 
+  // Ctrl+S / Cmd+S 保存
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault()
+        void onSave()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   return (
     <div className="flex min-h-0 flex-1">
       <TreePanel
@@ -100,9 +112,13 @@ export function WorkspacePage({ repo }: { repo: ExpRepo }): React.JSX.Element {
         onSelect={setSelectedId}
         onRefresh={refresh}
       />
-      <main className="relative min-w-0 flex-1 overflow-y-auto">
+      {/* 外层不滚动：悬浮面板与保存按钮固定；滚动只发生在文档内容区 */}
+      <main className="relative flex min-w-0 flex-1 flex-col">
         {doc ? (
           <>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <DocView blocks={doc.blocks} onChange={updateBlocks} />
+            </div>
             <MetaPanel
               meta={doc.meta}
               createdAt={doc.createdAt}
@@ -116,7 +132,6 @@ export function WorkspacePage({ repo }: { repo: ExpRepo }): React.JSX.Element {
                 {saving ? '…' : t('save.save')}
               </button>
             </div>
-            <DocView blocks={doc.blocks} onChange={updateBlocks} />
           </>
         ) : error ? (
           <div className="flex h-full flex-col items-center justify-center gap-3">

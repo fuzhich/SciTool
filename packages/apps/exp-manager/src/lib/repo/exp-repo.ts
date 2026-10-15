@@ -77,15 +77,20 @@ export class ExpRepo {
       }
     }
     if (data.format === EXPDOC_FORMAT) {
-      const doc = migrateDoc(data)
-      return {
-        kind: 'exp',
-        id: d.id,
-        title: doc.meta.title,
-        type: doc.meta.type,
-        folderId: doc.folderId ?? null,
-        updatedAt: doc.updatedAt,
-        revision: d.revision
+      try {
+        const doc = migrateDoc(data)
+        return {
+          kind: 'exp',
+          id: d.id,
+          title: doc.meta.title,
+          type: doc.meta.type,
+          folderId: doc.folderId ?? null,
+          updatedAt: doc.updatedAt,
+          revision: d.revision
+        }
+      } catch {
+        // 单个文档损坏不应拖垮整个列表，跳过即可
+        return null
       }
     }
     return null

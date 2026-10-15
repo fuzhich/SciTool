@@ -1,5 +1,5 @@
 import { normalizeDoc } from './validate'
-import { EXPDOC_VERSION, type ExpBlock, type ExpDoc, type ExpDocV1 } from './types'
+import { EXPDOC_FORMAT, EXPDOC_VERSION, type ExpBlock, type ExpDoc, type ExpDocV1 } from './types'
 
 // 版本迁移入口：旧版本文档在此逐级升级到当前版本（当前 v2）。
 export function migrateDoc(raw: unknown): ExpDoc {
@@ -9,7 +9,7 @@ export function migrateDoc(raw: unknown): ExpDoc {
   return normalizeDoc(raw)
 }
 
-function migrateV1toV2(v1: ExpDocV1): Omit<ExpDoc, 'format' | 'version'> {
+function migrateV1toV2(v1: ExpDocV1): ExpDoc {
   const blocks: ExpBlock[] = []
   for (const t of v1.tables ?? []) {
     blocks.push({ id: t.id, kind: 'table', name: t.name, columns: t.columns ?? [], rows: t.rows ?? [] })
@@ -29,6 +29,8 @@ function migrateV1toV2(v1: ExpDocV1): Omit<ExpDoc, 'format' | 'version'> {
     blocks.push({ id: r.id, kind: 'text', content })
   }
   return {
+    format: EXPDOC_FORMAT,
+    version: EXPDOC_VERSION,
     id: v1.id,
     folderId: v1.folderId ?? null,
     createdAt: v1.createdAt,
