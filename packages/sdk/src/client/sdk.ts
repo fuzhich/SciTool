@@ -1,4 +1,5 @@
 import { SDK_CHANNELS } from '../shared/channels'
+import { SDK_VERSION } from '../shared/types'
 import type {
   AiChatResult,
   FileEntry,
@@ -47,7 +48,7 @@ function toDoc(row: SharedDocRow): SharedDoc {
 
 export function createSdk(appId: string, invoker: SdkInvoker): Sdk {
   return {
-    version: '0.2.0',
+    version: SDK_VERSION,
     appId,
     storage: {
       get: async <T = unknown>(key: string): Promise<SdkResult<T | null>> => {
