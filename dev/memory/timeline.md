@@ -1,8 +1,9 @@
 # 时间步简表（Timeline）
 
-按时间顺序记录每次工作会话的简要摘要。
+> 性质：**历史流水（唯一历史源）**｜更新：2026-10-16
+> 记录规范：一行 = 一个有意义的工作单元（整场会话 / 里程碑 / 发布 / 一轮独立打磨）；维护性提交（docs 收尾、锁文件更新）不单列。表内「关联」= 决策编号 / 版本 tag / 关键产出文件。
 
-| 时间 | 会话内容 | 产出 | 状态 |
+| 时间 | 会话内容 | 关联（决策/版本） | 状态 |
 |------|----------|------|------|
 | 2026-10-14 | 项目初始化：建立 dev 目录结构（design/memory/secret）、制定开发规则与工作流、初始化 git 仓库、配置 GitHub 远程 | rules.md、workflow.md、architecture.md、memory 文档结构、.gitignore | 完成 |
 | 2026-10-14 | 版本控制验证：conda 安装 gh CLI 至 agent-tool 环境、设备码登录（账号 fuzhich）、创建公开仓库 SciTool 并推送 main | 仓库 https://github.com/fuzhich/SciTool | 完成 |
@@ -10,7 +11,7 @@
 | 2026-10-14 | 架构调研：并行调研 Rubick/uTools、VS Code/Theia、Joplin/Zotero 六产品架构，提炼借鉴与避坑清单，产出架构草案 v0.2 | 决策 D11、architecture.md v0.2 | 完成 |
 | 2026-10-14 | M1 实施：monorepo 搭建（shell/sdk/sample-app）、主进程（注册表/权限网关/生命周期/崩溃恢复）、SDK 最小集、应用中心 UI（Tailwind 极简风+中英 i18n）、冒烟测试验证 安装→启动→SDK→卸载 全链路 | packages/ 全部源码、决策 D12 | 完成 |
 | 2026-10-14 | 打包分发：NSIS 可选目录安装器配置与构建（93.8MB），开发者手动安装至 D:\Apps\SciTool 验证成功 | SciTool-0.1.0-setup.exe、决策 D13 | 完成 |
-| 2026-10-14 | 数据目录方案：默认安装目录/data、设置页迁移（指针文件+选择性复制+重启）、NSIS 卸载保留 data；开发者实测安装后 data 位置正确 | 决策 D14、data-dir.ts、installer.nsh | 完成 |
+| 2026-10-14 | 数据目录方案：默认安装目录/data、设置页迁移（指针文件+选择性复制+重启）、NSIS 卸载保留 data；开发者实测安装后 data 位置正确；修复 .gitignore 误忽略 build/（卸载保护脚本未入库） | 决策 D14、data-dir.ts、installer.nsh | 完成 |
 | 2026-10-14 | M2 实施：SQLite（注册表/存储/共享文档）、sdk.sharedData（revision+域名权限）、sdk.events 事件总线、旧数据迁移、SDK v0.2.0；dev 与打包模式冒烟全绿 | 决策 D15、db.ts、shared-data.ts、event-bus.ts | 完成 |
 | 2026-10-14 | M3 实施：平台自更新（electron-updater+设置页）、应用自更新（update.url 全链路）、暗色主题、设置页完善；冒烟验证更新链路 | 决策 D16、updater.ts、app-updater.ts | 完成 |
 | 2026-10-14 | v0.1.0 正式发布 GitHub Release（安装包+latest.yml 更新源上线），处理 electron-builder 双草稿坑 | 决策 D17 | 完成 |
@@ -25,10 +26,9 @@
 | 2026-10-15 | 实验管理修复：拖入文件夹失效（dragover 每次必须 preventDefault）、点击误插新行（内容区限定 + 12px 边界） | — | 完成 |
 | 2026-10-15 | 实验管理：顶会式正文排版（衬线 14px/1.7 行高/两端对齐）、行距收紧、空行退格合并回上一行末尾 | — | 完成 |
 | 2026-10-15 | **里程碑：实验管理 v2 达成** —— 开发者验收「非常漂亮，又一里程碑」；无缝编辑 + 顶会排版 + 直接交互三线打磨完成 | — | 完成 |
-| 2026-10-15 | DevGuide 任务书沉淀两个应用实战经验：技术栈清单（5.1）、实战六步（5.2）、无缝编辑与顶会排版要点（6.6）、避坑清单扩充 9 条实测坑 | — | 完成 |
-| 2026-10-15 | 应用中心改版：极简磁贴（图标+名称）+ 单击右侧详情侧栏（版本/权限/安装时间/操作）+ 双击启动 | — | 完成 |
-| 2026-10-15 | 平台 AI 服务（D22）：设置页 AI 配置（DeepSeek/OpenAI/自定义预设 + Key safeStorage 加密 + 保存即验证）；SDK 0.5.0 sdk.ai（新 ai 权限，平台代理转发，Key 不下发应用） | 决策 D22、ai-config.ts、ai-service.ts | 完成 |
-| 2026-10-15 | 平台 AI 服务（D22）：设置页 AI 配置（DeepSeek/OpenAI/自定义预设 + Key safeStorage 加密 + 保存即验证）；SDK 0.5.0 sdk.ai（新 ai 权限，平台代理转发，Key 不下发应用） | 决策 D22、ai-config.ts、ai-service.ts | 完成 |
+| 2026-10-15 | DevGuide 任务书沉淀两个应用实战经验：技术栈清单（5.1）、实战六步（5.2）、UI 风格规范章节（6.1–6.6）、无缝编辑与顶会排版要点、避坑清单扩充 9 条实测坑 | — | 完成 |
+| 2026-10-15 | 应用中心改版：极简磁贴（图标+名称）+ 单击右侧详情侧栏（版本/权限/安装时间/操作）+ 双击启动；修复长 app id 挤压按钮（显示末段短 id） | — | 完成 |
+| 2026-10-15 | 平台 AI 服务（D22）：设置页 AI 配置（DeepSeek/OpenAI/自定义预设 + Key safeStorage 加密 + 保存即验证）；SDK 0.5.0 sdk.ai（新 ai 权限，平台代理转发，Key 不下发应用）；DevGuide/exp-manager 同步 mock ai 与任务书 | 决策 D22、ai-config.ts、ai-service.ts | 完成 |
 | 2026-10-15 | 平台 SDK 0.6.0（D23 前置）：fileStore 应用私有二进制存储（≤50MB/文件）、net 主进程网络代理（无 CORS/走系统代理）、ui.pickFile 文件选择；权限扩展至 9 种；DevGuide 任务书同步 | 决策 D23、file-store.ts、net-service.ts | 完成 |
 | 2026-10-15 | 论文管理 M5a（D23）：PDF 导入（pickFile/拖拽 → fileStore）+ 三通道元数据提取（pdfjs 内嵌元数据/DOI→Crossref 校准无 AI 可用，AI 首页文本提取增强）+ AI 开关与降级路径 + 元数据可编辑面板；冒烟全绿 | packages/apps/papers | 完成 |
 | 2026-10-15 | **v0.2.0 发布**：安装器 SciTool-0.2.0-setup.exe + 更新源上线 GitHub Release（含 dev-guide/exp-manager/papers 三个应用 zip 资产）；按 release_checklist 处理双草稿（删残缺草稿+补 blockmap+转正式） | — | 完成 |
@@ -48,3 +48,4 @@
 | 2026-10-15 | 实验管理导出（M4c，SDK 0.7.0）：sdk.ui.saveFile 二进制保存；表格「导出 CSV」（当前表，UTF-8 BOM）、图片「导出图片」（原图）、右上「导出全部」（zip：tables/*.csv + figures/* 原图 + experiment.md 对应关系 + expdoc.json 原始数据）；数据与原始拖入文件完全独立 | — | 完成 |
 | 2026-10-15 | 实验管理导出补充：表格块「导出 XLSX」（当前表，SheetJS 生成）；整体导出 zip 内每个表格追加整表 xlsx（多 sheet 合一）；导出失败根因提示（运行中 dev 实例主进程未重启，handler 缺失） | — | 完成 |
 | 2026-10-15 | **会话收尾**：实验管理原始需求全部落地（文档引擎 v3/导出/Word 式编辑），论文管理 M5a 完成，应用市场上线，v0.3.0 发布；下一步论文管理 M5b（引用网络）+ 实验管理 v1.1 后续发版 | — | 完成 |
+| 2026-10-16 | **dev/ 文档整理（人机双读）**：architecture 重写为 as-built（决策索引 D1–D24 / SDK 0.7.0 全能力表 / 实际目录树 / 开发命令速查）、progress 瘦身为快照、新增 dev/README 导航、timeline 去重与规范；清理 version.txt、latest_commit.md、仓库根空 src/；修复 SDK 运行时版本号硬编码（0.2.0 → 引用常量） | 整理轮；fix + docs 提交 | 完成 |

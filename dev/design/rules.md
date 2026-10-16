@@ -4,23 +4,16 @@
 
 ## 1. 环境规则
 
-- **Python 环境**：所有 Python 相关操作（运行脚本、安装依赖、调试）必须使用 conda 环境 `agent-tool`。
-  - 激活方式：`conda activate agent-tool`
-  - 严禁在 `base` 或其他环境中运行本项目 Python 代码。
+- **Python 环境**：所有 Python 相关操作（运行脚本、安装依赖、调试）必须使用 conda 环境 `agent-tool`（conda 位于 `D:\SDK\MiniConda`；gh CLI 也装在该环境）。
+  - 调用方式（推荐，非交互式最稳）：`conda run --no-capture-output -n agent-tool python ...`；亦可用 `conda activate agent-tool`
+  - 严禁在 `base` 或其他环境中运行 Python 代码，也不要 pip install 到 base。
+  - Node / pnpm 等前端工具链用系统环境，与 conda 无关。
 - **项目根目录**：`D:\Projects\SciTools`
 
 ## 2. 目录规则
 
-```
-SciTools/
-├── dev/                    # 开发管理资料（本项目为研发管理目录）
-│   ├── design/             # 设计文档：规则、架构、工作流
-│   ├── memory/             # 工作进度追踪（时间步简表、提交摘要、决策记录等）
-│   └── secret/             # 私人信息（GitHub 账密等）—— 严禁提交到 GitHub
-├── src/                    # 源代码（待创建）
-├── docs/                   # 用户文档（待创建）
-└── tests/                  # 测试代码（待创建）
-```
+- 仓库目录结构以 `design/architecture.md` §8 为**唯一事实源**；dev/ 各文件职责见 `dev/README.md`。
+- `dev/secret/` 为私人信息目录，**严禁**提交到 Git/GitHub。
 
 ## 3. 版本控制规则
 
