@@ -4,8 +4,8 @@
     "zh": "实验管理",
     "en": "Experiments"
   },
-  "version": "1.1.0",
-  "minSdkVersion": "0.2.0",
+  "version": "1.2.0",
+  "minSdkVersion": "0.7.0",
   "description": {
     "zh": "科研实验管理：实验文档（设置/表格/统计图/结果/备注）+ 项目文件夹 + 数据导出",
     "en": "Research experiment manager: experiment docs (settings/tables/figures/results/notes) + project folders + export"
